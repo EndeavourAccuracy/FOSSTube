@@ -1,0 +1,101 @@
+# SPDX-License-Identifier: Zlib
+# FSTube v1.0 (February 2020)
+# Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+#
+# This software is provided 'as-is', without any express or implied
+# warranty.  In no event will the authors be held liable for any damages
+# arising from the use of this software.
+#
+# Permission is granted to anyone to use this software for any purpose,
+# including commercial applications, and to alter it and redistribute it
+# freely, subject to the following restrictions:
+#
+# 1. The origin of this software must not be misrepresented; you must not
+#    claim that you wrote the original software. If you use this software
+#    in a product, an acknowledgment in the product documentation would be
+#    appreciated but is not required.
+# 2. Altered source versions must be plainly marked as such, and must not be
+#    misrepresented as being the original software.
+# 3. This notice may not be removed or altered from any source distribution.
+
+RewriteEngine On
+
+# DO NOT USE ON LOCALHOST
+RewriteEngine On
+RewriteCond %{SERVER_PORT} ^80$
+RewriteRule ^(.*)$ https://%{SERVER_NAME}%{REQUEST_URI} [L,R=301]
+RewriteCond %{HTTP_HOST} !^www\.
+RewriteRule ^(.*)$ https://www.%{HTTP_HOST}/$1 [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^edit/(.*)$ /edit/index.php?code=$1 [NC,L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^thumbnail/(.*)$ /thumbnail/index.php?code=$1 [NC,L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^v/([a-zA-Z0-9]*)$ /v/index.php?code=$1 [NC,L,QSA]
+
+# Video, specific comment
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^v/([a-zA-Z0-9]*)/([0-9]*)$ /v/index.php?code=$1&comment=$2 [NC,L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^embed/([a-zA-Z0-9]*)$ /embed/index.php?code=$1 [NC,L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^user/(.*)$ /user/index.php?username=$1 [NC,L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^text/(.*)$ /text/index.php?code=$1 [NC,L,QSA]
+
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?yourdomain.com [NC]
+RewriteRule \.(mp4)$ - [NC,F,L]
+
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?mytubes\.xyz [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?nyuu\.info [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?av4\.xyz [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?mp44\.us [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?av4\.club [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?jpg4\.xyz [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?jtube\.space [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?jpger\.info [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?fc2av\.com [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?sagac\.info [NC,OR]
+RewriteCond %{HTTP_REFERER} ^http(s)?://(.+\.)?youtube4download\.space [NC]
+RewriteCond %{REQUEST_URI} !stop_hotlinking\.png$ [NC]
+RewriteRule \.(jpg)$ https://www.yourdomain.com/images/stop_hotlinking.png [L]
+
+# Board
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^forum/([0-9]*)$ /forum/index.php?board=$1 [NC,L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^store/(.*)$ /store/index.php?code=$1 [NC,L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^editf/(.*)$ /editf/index.php?folder=$1 [NC,L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^folder/(.*)$ /folder/index.php?folder=$1 [NC,L,QSA]
+
+<FilesMatch "\.(mp4)$">
+Header set Expires "Mon, 27 Mar 2038 13:33:37 GMT"
+Header set Cache-Control "max-age=31536000"
+ForceType video/mp4
+</FilesMatch>
+# Cache for 1 day.
+<FilesMatch "\.(jpg|png|gif|js|css)$">
+Header set Cache-Control "max-age=86400"
+</FilesMatch>

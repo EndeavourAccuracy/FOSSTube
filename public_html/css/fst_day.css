@@ -1,0 +1,304 @@
+/* SPDX-License-Identifier: Zlib */
+/* FSTube v1.0 (February 2020)
+ * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ */
+
+body {
+	background-image:url('/images/back_01.jpg');
+	color:#333;
+}
+h1 {
+	color:#414dc5;
+}
+h2 {
+	color:#414dc5;
+}
+h3 {
+	color:#414dc5;
+}
+a:link {
+	color:#000;
+}
+a:active {
+	color:#000;
+}
+a:visited {
+	color:#000;
+}
+a:hover {
+	color:#000;
+}
+blockquote {
+	background-color:#ddd;
+}
+input[type=button], input[type=submit], .button {
+	border:1px solid #999;
+	color:#333;
+	background-color:#e8e8e8;
+}
+input[type=button]:hover, input[type=submit]:hover, .button:hover {
+	background-color:#c6c6c6;
+}
+input[type=text], input[type=password] {
+	border:1px solid #999;
+	background-color:#fff;
+}
+input[type=text]:focus {
+	background-color:#fff;
+}
+textarea {
+	border:1px solid #999;
+	background-color:#fff;
+}
+select {
+	background-color:#ddd;
+}
+.div-main {
+	background-color:rgba(255,255,255,0.8);
+	box-shadow:0px 0px 100px 10px #444;
+}
+.upload-success {
+	background-color:#4dec26;
+	color:#000;
+}
+.upload-failed {
+	background-color:#d01c8b;
+	color:#000;
+}
+.upload-unknown {
+	background-color:#8e8458;
+	color:#000;
+}
+.likes {
+	color:#00f;
+}
+.processing-span {
+	background-color:rgba(255,255,255,0.8);
+	border-color:#000;
+}
+.hd-span {
+	background-color:rgba(65,77,197,0.8);
+}
+.time-span {
+	background-color:rgba(255,255,255,0.8);
+}
+.lang-span {
+	background-color:rgba(255,255,255,0.8);
+}
+.edit-span {
+	background-color:rgba(255,255,255,0.8);
+}
+.processing {
+	color:#414dc5;
+}
+.admin-div, .mod-div {
+	border:1px solid #000;
+	background-color:#fff;
+}
+.fst-hr {
+	background-color:#999;
+}
+.video {
+	border:1px solid #bbb;
+	background-color:#fff;
+}
+.hover {
+	background-color:#000;
+}
+.user {
+	color:#999;
+}
+.views {
+	color:#999;
+	background-color:#fff;
+}
+.div-report {
+	border:2px solid #000;
+	background-color:#fff;
+}
+.span-report {
+	background-color:#ddd;
+}
+#footer {
+	background-color:#ddd;
+	color:#777;
+	border-top:1px solid #bbb;
+}
+#user-info, #folder-desc {
+	border:1px solid #ddd;
+	background-color:rgba(255,255,255,0.5);
+}
+#search {
+	background-image:linear-gradient(to right,rgba(65,77,197,0.2),rgba(65,77,197,0));
+}
+#video-cont-a {
+	background-color:#fff;
+	border:1px solid #000;
+	border-bottom:1px solid #fff;
+}
+.hover #video {
+	border:1px solid #000;
+}
+#search_query {
+	background-color:#f8f8ff;
+}
+#search_button {
+	background-color:#e8e8e8;
+	border:1px solid #999;
+	border-left:0;
+}
+#search_button:hover {
+	background-color:#d7d7d7;
+}
+.comment {
+	border:1px dashed #414dc5;
+	background-color:#fff;
+}
+.reply {
+	border-left:2px solid #999;
+	background-color:#ddd;
+}
+#referrers-div {
+	border:1px solid #bbb;
+	background-color:#fff;
+}
+.processor {
+	border:1px dashed #414dc5;
+	background-color:#fff;
+}
+.processor-img {
+	border:1px solid #999;
+}
+#donate {
+	border:1px solid #999;
+	background-color:#fff;
+	color:#000;
+}
+#donate-text {
+	border:1px solid #bbb;
+}
+.noUi-connect {
+	background:#414dc5;
+}
+#boards-header {
+	background-color:#ddd;
+}
+#topics {
+	background-color:#fff;
+}
+#topics .row {
+	border:1px solid #000;
+}
+#topics .row + .row {
+	border-top:0;
+}
+#topics-header {
+	background-color:#ddd;
+}
+.message {
+	background-color:#fff;
+	border:1px solid #000;
+}
+#nsfw-div {
+	background-color:#414dc5;
+	color:#fff;
+}
+#nsfw-div a {
+	color:#fff;
+}
+.activep {
+	border:1px dotted #000;
+}
+
+/*** Delete checkbox. ***/
+.chk-delete {
+	border:1px solid #000;
+	color:#fff;
+}
+.chk-delete:checked {
+	background-color:#414dc5;
+}
+.chk-delete:hover {
+	box-shadow:0px 0px 10px #414dc5;
+}
+
+/*** Notes. ***/
+.note {
+	color:#fff;
+}
+.report { background-color:#00f; }
+.error { background-color:#f00; }
+.warning { background-color:#ff8000; }
+.saved { background-color:#008000; }
+.deleted { background-color:#008000; }
+.stored { background-color:#008000; }
+
+/*** Navbar ***/
+.navbar {
+	border-bottom:1px solid rgba(65,77,197,0.5);
+	box-shadow:0 3px 10px rgba(65,77,197,0.4);
+}
+.navbar-default {
+	background-color:#f8f8f8;
+}
+.navbar-default .navbar-nav > .active > a {
+	background-color:#414dc5!important;
+	color:#fff!important;
+}
+.navbar-default .navbar-nav > .active > a:focus,
+.navbar-default .navbar-nav > .active > a:hover {
+	background-color:#e7e7e7!important;
+	color:#555!important;
+}
+.dropdown-menu > .active > a {
+	background-color:#414dc5!important;
+	color:#fff!important;
+}
+.dropdown-menu > .active > a:focus,
+.dropdown-menu > .active > a:hover {
+	background-color:#e7e7e7!important;
+	color:#555!important;
+}
+
+/*** Matches ***/
+#matches_title {
+	color:#414dc5;
+}
+
+/*** Write ***/
+.show-tab {
+	border:1px solid #000;
+	border-bottom:0;
+	background-color:#fff;
+}
+.show-tab:hover {
+	background-color:#ddd;
+}
+.show-tab.active {
+	color:#fff;
+	background-color:#414dc5;
+}
+.tab {
+	border:1px solid #000;
+	background-color:#fff;
+}
+.text {
+	background-color:#fff;
+	color:#000;
+}
