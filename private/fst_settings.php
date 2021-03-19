@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,9 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
+/* In debug mode ('live' is FALSE), no emails are sent, and any verification
+ * codes entered are accepted as valid.
+ */
 $GLOBALS['live'] = TRUE;
 $GLOBALS['maintenance'] = FALSE;
 
@@ -48,6 +51,7 @@ $GLOBALS['short_description'] = 'Website description.';
 $GLOBALS['header_image_width'] = 208;
 $GLOBALS['header_image_height'] = 30;
 $GLOBALS['swift_dir'] = 'swift_random';
+$GLOBALS['phpqrcode_dir'] = 'phpqrcode_random';
 $GLOBALS['mail_host'] = 'SMTP hostname';
 $GLOBALS['mail_from'] = 'SMTP email address';
 $GLOBALS['mail_pass'] = 'SMTP password';
@@ -68,7 +72,7 @@ $GLOBALS['admins'] = array ('user2');
 $GLOBALS['mods'] = array ('user3', 'user4');
 
 $GLOBALS['disallowed_usernames'] = array ('yourdomain', 'admin', 'webmaster', 'postmaster', 'root', 'administrator', 'sysadmin', 'moderator', 'webadmin');
-$GLOBALS['disallowed_email_ends'] = array ('.onion');
+$GLOBALS['disallowed_email_ends'] = array ('.onion', 'yandex.com');
 $GLOBALS['items_per_page'] = 24;
 /***
 $sGrep = 'grep -c processor /proc/cpuinfo';
@@ -86,8 +90,10 @@ $GLOBALS['default_nsfw'] = 0;
 
 $GLOBALS['max_cpu_load'] = 0.95; /*** Out of 1 (even with mult. cores). ***/
 $GLOBALS['default_theme'] = 'day';
-$GLOBALS['no_embed_domains'] = array ('mytubes.xyz', 'nyuu.info', 'av4.xyz', 'mp44.us', 'av4.club', 'jpg4.xyz', 'jtube.space', 'jpger.info', 'fc2av.com', 'sagac.info', 'youtube4download.space');
+$GLOBALS['no_embed_domains'] = array ('mytubes.xyz', 'nyuu.info', 'av4.xyz', 'mp44.us', 'av4.club', 'jpg4.xyz', 'jtube.space', 'jpger.info', 'fc2av.com', 'sagac.info', 'youtube4download.space', 'yastatic.net');
 $GLOBALS['default_pref']['user_pref_nsfw'] = 0;
+$GLOBALS['default_pref']['user_pref_cwidth'] = 0;
+$GLOBALS['default_pref']['user_pref_tsize'] = 80;
 
 /* Video (transcoding) quality. LOWER value is better.
  * Example values are 25, 20 (default), and 17 (visually near-lossless).
@@ -107,4 +113,8 @@ $GLOBALS['ffmpeg_ab'] = '128k';
 $GLOBALS['may_add_videos'] = array();
 $GLOBALS['may_add_texts'] = array();
 $GLOBALS['may_add_topics'] = array();
+
+$GLOBALS['request_types'] = array (
+	1 => 'email address'
+);
 ?>

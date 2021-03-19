@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -248,8 +248,12 @@ $(document).ready(function(){
 		{
 			var title = $(this).data("title");
 			title = title.replace(/\"/g, "&quot;");
+			style = $(this).find("img").attr("style");
+			if (style == "undefined")
+				{ style = ""; }
+					else { style = " style=\"" + style + "\""; }
 			var video = "<video src=\"" + preview + "\" alt=\"" +
-				title + "\" class=\"thumb-or-preview\" autoplay loop>";
+				title + "\" class=\"thumb-or-preview\"" + style + " autoplay loop>";
 			$(this).html(video);
 			$(this).data("active","video");
 		}
@@ -261,8 +265,12 @@ $(document).ready(function(){
 			var thumb = $(this).data("thumb");
 			var title = $(this).data("title");
 			title = title.replace(/\"/g, "&quot;");
+			style = $(this).find("video").attr("style");
+			if (style == "undefined")
+				{ style = ""; }
+					else { style = " style=\"" + style + "\""; }
 			var image = "<img src=\"" + thumb + "\" alt=\"" +
-				title + "\" class=\"thumb-or-preview\">";
+				title + "\" class=\"thumb-or-preview\"" + style + ">";
 			$(this).html(image);
 			$(this).data("active","thumb");
 		}
@@ -312,12 +320,12 @@ $(document).ready(function(){
 					if (theme == "day")
 					{
 						$("#theme").data("theme","day");
-						$("#theme").attr("href","/css/fst_day.css?v=12");
+						$("#theme").attr("href","/css/fst_day.css?v=16");
 						$("#switch-img").attr("alt","night");
 						$("#switch-img").attr("src","/images/theme/night.png");
 					} else {
 						$("#theme").data("theme","night");
-						$("#theme").attr("href","/css/fst_night.css?v=12");
+						$("#theme").attr("href","/css/fst_night.css?v=16");
 						$("#switch-img").attr("alt","day");
 						$("#switch-img").attr("src","/images/theme/day.png");
 					}

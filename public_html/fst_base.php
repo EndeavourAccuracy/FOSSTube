@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -345,21 +345,21 @@ print ('
 <![endif]-->
 <script src="/js/wNumb.min.js"></script>
 <script src="/js/nouislider.min.js"></script>
-<script src="/js/fst.js?v=28"></script>
+<script src="/js/fst.js?v=32"></script>
 
 <!-- CSS -->
 <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="/css/nouislider.min.css">
-<link rel="stylesheet" type="text/css" href="/css/fst.css?v=35">
+<link rel="stylesheet" type="text/css" href="/css/fst.css?v=39">
 ');
 
 if (!isset ($_SESSION['fst']['theme']))
 	{ $_SESSION['fst']['theme'] = $GLOBALS['default_theme']; }
 if ($_SESSION['fst']['theme'] == 'day')
 {
-	print ('<link rel="stylesheet" type="text/css" href="/css/fst_day.css?v=12" id="theme" data-theme="day">' . "\n");
+	print ('<link rel="stylesheet" type="text/css" href="/css/fst_day.css?v=16" id="theme" data-theme="day">' . "\n");
 } else {
-	print ('<link rel="stylesheet" type="text/css" href="/css/fst_night.css?v=12" id="theme" data-theme="night">' . "\n");
+	print ('<link rel="stylesheet" type="text/css" href="/css/fst_night.css?v=16" id="theme" data-theme="night">' . "\n");
 }
 
 print ('
@@ -368,9 +368,30 @@ print ('
 
 	if ($bEmbed === FALSE)
 	{
+		$sCWidth = '';
+		if ($sTitle == 'Home')
+		{
+			switch (Pref ('user_pref_cwidth'))
+			{
+				case 1: $sCWidth = ' width:100%!important;'; break;
+				case 2: $sCWidth = ' width:calc(100% - 50px)!important;'; break;
+				case 3: $sCWidth = ' width:calc(100% - 100px)!important;'; break;
+				case 4: $sCWidth = ' width:calc(100% - 150px)!important;'; break;
+				case 5: $sCWidth = ' width:2290px!important;'; break;
+				case 6: $sCWidth = ' width:1730px!important;'; break;
+				case 7: $sCWidth = ' width:1170px!important;'; break;
+				case 8: $sCWidth = ' width:970px!important;'; break;
+				case 9: $sCWidth = ' width:750px!important;'; break;
+				case 10: $sCWidth = ' width:650px!important;'; break;
+				case 11: $sCWidth = ' width:550px!important;'; break;
+				case 12: $sCWidth = ' width:450px!important;'; break;
+				case 13: $sCWidth = ' width:350px!important;'; break;
+			}
+		}
+
 print ('
 <body>
-<div class="container" style="height:calc(100% - 71px);">
+<div class="container" style="height:calc(100% - 71px);' . $sCWidth . '">
 ');
 		$GLOBALS['menu_name'] = $sMenuName;
 		$GLOBALS['menu_item'] = $sMenuItem;
@@ -603,8 +624,8 @@ function GetIP ()
 				if (filter_var ($sIP, FILTER_VALIDATE_IP) !== FALSE)
 					{ return ($sIP); }
 			}
-		} 
-	} 
+		}
+	}
 	return ('unknown');
 }
 /*****************************************************************************/
@@ -752,6 +773,19 @@ function LinkBack ($sPath, $sText)
 	print ('<span style="display:block; margin-bottom:10px;">');
 	print ('<a href="' . $sPath . '">&laquo; ' . $sText . '</a>');
 	print ('</span>');
+}
+/*****************************************************************************/
+function IsOwner ()
+/*****************************************************************************/
+{
+	if ((isset ($_SESSION['fst']['user_username'])) &&
+		(in_array ($_SESSION['fst']['user_username'],
+			$GLOBALS['owners']) === TRUE))
+	{
+		return (TRUE);
+	} else {
+		return (FALSE);
+	}
 }
 /*****************************************************************************/
 function IsAdmin ()
@@ -938,7 +972,9 @@ function UserExists ($sUsername)
 	$query_user = "SELECT
 			user_id,
 			user_username,
-			user_pref_nsfw
+			user_pref_nsfw,
+			user_pref_cwidth,
+			user_pref_tsize
 		FROM `fst_user`
 		WHERE (user_username='" . mysqli_real_escape_string
 			($GLOBALS['link'], $sUsername) . "')
@@ -950,6 +986,8 @@ function UserExists ($sUsername)
 		$arUser['id'] = intval ($row_user['user_id']);
 		$arUser['username'] = $row_user['user_username'];
 		$arUser['pref_nsfw'] = intval ($row_user['user_pref_nsfw']);
+		$arUser['pref_cwidth'] = intval ($row_user['user_pref_cwidth']);
+		$arUser['pref_tsize'] = intval ($row_user['user_pref_tsize']);
 	} else {
 		$arUser = FALSE;
 	}
@@ -1089,6 +1127,18 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 	{
 		while ($row_videos = mysqli_fetch_assoc ($result_videos))
 		{
+			/*** $iTSizeW, $iTSizeH ***/
+			$iTSizeW = 0; $iTSizeH = 0;
+			switch (Pref ('user_pref_tsize'))
+			{
+				case 100: $iTSizeW = 320; $iTSizeH = 180; break;
+				case 90: $iTSizeW = 288; $iTSizeH = 162; break;
+				/*** 80 = default ***/
+				case 70: $iTSizeW = 224; $iTSizeH = 126; break;
+				case 60: $iTSizeW = 192; $iTSizeH = 108; break;
+				case 50: $iTSizeW = 160; $iTSizeH = 90; break;
+			}
+
 			if ($iFolderID != 0)
 				{ $iOrder = intval ($row_videos['folderitem_order']); }
 			$iVideoID = $row_videos['video_id'];
@@ -1106,12 +1156,21 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 
 			$sHTML .= '<div class="video';
 			if ($sSection == 'index') { $sHTML .= ' zoomin'; }
-			$sHTML .= '">';
+			$sHTML .= '"';
+			if (($iTSizeW != 0) && ($iTSizeH != 0))
+				{ $sHTML .= ' style="width:calc(' . $iTSizeW . 'px + 24px)!important; height:calc(' . $iTSizeH . 'px + 94px)!important;"'; }
+			$sHTML .= '>';
 			$sHTML .= '<div style="position:relative;">';
 			$sHTML .= '<a href="/v/' . $sCode . '">';
-			$sHTML .= '<span data-name="hover" data-active="thumb" data-thumb="' . $sThumb . '" data-preview="' . $sPreview . '" data-title="' . Sanitize ($sTitle) . '" class="hover">';
+			$sHTML .= '<span data-name="hover" data-active="thumb" data-thumb="' . $sThumb . '" data-preview="' . $sPreview . '" data-title="' . Sanitize ($sTitle) . '" class="hover"';
+			if (($iTSizeW != 0) && ($iTSizeH != 0))
+				{ $sHTML .= ' style="width:calc(' . $iTSizeW . 'px + 2px)!important; height:calc(' . $iTSizeH . 'px + 2px)!important;"'; }
+			$sHTML .= '>';
 			$sHTML .= '<img src="' . $sThumb . '" alt="' .
-				Sanitize ($sTitle) . '" class="thumb-or-preview">';
+				Sanitize ($sTitle) . '" class="thumb-or-preview"';
+			if (($iTSizeW != 0) && ($iTSizeH != 0))
+				{ $sHTML .= ' style="max-width:' . $iTSizeW . 'px!important; max-height:' . $iTSizeH . 'px!important;"'; }
+			$sHTML .= '>';
 			$sHTML .= '</span>';
 			$sHTML .= '</a>';
 			if (($row_videos['video_preview'] == 2) ||
@@ -1170,8 +1229,17 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 			$sHTML .= '<a href="/v/' . $sCode . '" title="' .
 				Sanitize ($sTitle) . '" style="text-decoration:none;">';
 			$sHTML .= '<h2 class="title"';
-			if ($row_videos['video_istext'] == '1')
-				{ $sHTML .= ' style="font-style:italic;"'; }
+			if (($row_videos['video_istext'] == '1') ||
+				(Pref ('user_pref_tsize') !=
+				$GLOBALS['default_pref']['user_pref_tsize']))
+			{
+				$sHTML .= ' style="';
+				if ($row_videos['video_istext'] == '1')
+					{ $sHTML .= 'font-style:italic;'; }
+				if (($iTSizeW != 0) && ($iTSizeH != 0))
+					{ $sHTML .= 'width:' . $iTSizeW . 'px!important;'; }
+				$sHTML .= '"';
+			}
 			$sHTML .= '>' . Sanitize ($sTitle) . '</h2>';
 			$sHTML .= '</a>';
 			if ($iViewEdit == 1)
@@ -1191,8 +1259,12 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 			} else {
 				$sHTML .= '<div style="position:relative;">';
 				$sHTML .= '<a href="/user/' . $row_videos['user_username'] . '">';
-				$sHTML .= '<div class="user">' .
-					$row_videos['user_username'] . '</div>';
+				$sHTML .= '<div class="user"';
+				if (($iTSizeW != 0) && ($iTSizeH != 0))
+					{ $sHTML .= ' style="max-width:' . $iTSizeW . 'px!important;"'; }
+				$sHTML .= '>';
+				$sHTML .= $row_videos['user_username'];
+				$sHTML .= '</div>';
 				$sHTML .= '</a>';
 				$sHTML .= '<div class="views">' . $iViews . ' view';
 				if ($iViews != 1) { $sHTML .= 's'; }
@@ -1505,7 +1577,7 @@ function CheckIfBanned ()
 			header ('Location: /banned/');
 			exit();
 		}
-	} 
+	}
 }
 /*****************************************************************************/
 function CheckIfMaintenance ()
@@ -1516,6 +1588,8 @@ function CheckIfMaintenance ()
 		unset ($_SESSION['fst']['user_id']);
 		unset ($_SESSION['fst']['user_username']);
 		unset ($_SESSION['fst']['user_pref_nsfw']);
+		unset ($_SESSION['fst']['user_pref_cwidth']);
+		unset ($_SESSION['fst']['user_pref_tsize']);
 		/***/
 		unset ($_SESSION['fst']['step_signup']);
 		unset ($_SESSION['fst']['step_forgot']);
@@ -1590,6 +1664,7 @@ function Times ($sString)
 			case 4: $sMatchS = '00:0' . $sMatchU; break;
 			case 5: $sMatchS = '00:' . $sMatchU; break;
 			case 7: $sMatchS = '0' . $sMatchU; break;
+			case 8: $sMatchS = $sMatchU; break;
 		}
 		$iSeconds = strtotime ('1970-01-01 ' . $sMatchS . ' UTC');
 		$sString = str_replace ($sMatchU, '<a href="?t=' . $iSeconds . '">' .
@@ -1675,6 +1750,26 @@ function NewMessages ($iUserID)
 	return ($arReturn);
 }
 /*****************************************************************************/
+function NewRequests ($iUserID)
+/*****************************************************************************/
+{
+	$arReturn = array();
+
+	$query_new = "SELECT
+			request_id
+		FROM `fst_request`
+		WHERE (user_id_recipient='" . $iUserID . "')
+		AND (request_status='2')
+		ORDER BY request_adddate DESC";
+	$result_new = Query ($query_new);
+	while ($row_new = mysqli_fetch_assoc ($result_new))
+	{
+		array_push ($arReturn, $row_new['request_id']);
+	}
+
+	return ($arReturn);
+}
+/*****************************************************************************/
 function NrNotifications ()
 /*****************************************************************************/
 {
@@ -1694,6 +1789,9 @@ function NrNotifications ()
 
 		$arNewMessages = NewMessages ($iUserID);
 		$iNotifications += count ($arNewMessages);
+
+		$arNewRequests = NewRequests ($iUserID);
+		$iNotifications += count ($arNewRequests);
 	}
 
 	return ($iNotifications);
@@ -2051,19 +2149,10 @@ function IsText ($sCode)
 	}
 }
 /*****************************************************************************/
-function Sanitize ($sUserInput)
-/*****************************************************************************/
-{
-	$sReturn = htmlentities ($sUserInput, ENT_QUOTES);
-	$sReturn = str_ireplace ('javascript', 'JS', $sReturn);
-
-	return ($sReturn);
-}
-/*****************************************************************************/
 function Pref ($sPref)
 /*****************************************************************************/
 {
-	/*** Returns 0 or 1. ***/
+	/*** Returns 0 or 1 for 'user_pref_nsfw'. ***/
 
 	if (isset ($_SESSION['fst'][$sPref]))
 	{
@@ -2108,28 +2197,6 @@ function FolderIsFromUser ($iFolderID, $iUserID)
 	$result_folder = Query ($query_folder);
 	if (mysqli_num_rows ($result_folder) == 1)
 		{ return (TRUE); } else { return (FALSE); }
-}
-/*****************************************************************************/
-function CreateMessage ($iSenderID, $iRecipientID, $sText)
-/*****************************************************************************/
-{
-	/* $iSenderID:
-	 * -1 = system
-	 * 0 = "an administrator"
-	 * positive number = user ID
-	 */
-
-	$sDTNow = date ('Y-m-d H:i:s');
-
-	$query_message = "INSERT INTO `fst_message` SET
-		user_id_sender='" . $iSenderID . "',
-		user_id_recipient='" . $iRecipientID . "',
-		message_text='" . mysqli_real_escape_string
-			($GLOBALS['link'], $sText) . "',
-		video_id='0',
-		message_adddate='" . $sDTNow . "',
-		message_cleared='0'";
-	Query ($query_message);
 }
 /*****************************************************************************/
 function VideoThumb ($iVideoID)
@@ -2219,6 +2286,60 @@ function MayAdd ($sType)
 	}
 
 	return (TRUE);
+}
+/*****************************************************************************/
+function CWidth ($iCWidth)
+/*****************************************************************************/
+{
+	switch ($iCWidth)
+	{
+		case 0: $sCWidth = 'auto (default)'; break;
+		case 1: $sCWidth = '100%'; break;
+		case 2: $sCWidth = '100% - 50px'; break;
+		case 3: $sCWidth = '100% - 100px'; break;
+		case 4: $sCWidth = '100% - 150px'; break;
+		case 5: $sCWidth = '2290px'; break;
+		case 6: $sCWidth = '1730px'; break;
+		case 7: $sCWidth = '1170px'; break;
+		case 8: $sCWidth = '970px'; break;
+		case 9: $sCWidth = '750px'; break;
+		case 10: $sCWidth = '650px'; break;
+		case 11: $sCWidth = '550px'; break;
+		case 12: $sCWidth = '450px'; break;
+		case 13: $sCWidth = '350px'; break;
+		default: $sCWidth = FALSE; break;
+	}
+
+	return ($sCWidth);
+}
+/*****************************************************************************/
+function TSize ($iTSize)
+/*****************************************************************************/
+{
+	switch ($iTSize)
+	{
+		case 100: $sTSize = '100%, 320x180'; break;
+		case 90: $sTSize = '90%, 288x162'; break;
+		case 80: $sTSize = '80%, 256x144 (default)'; break;
+		case 70: $sTSize = '70%, 224x126'; break;
+		case 60: $sTSize = '60%, 192x108'; break;
+		case 50: $sTSize = '50%, 160x90'; break;
+		default: $sTSize = FALSE; break;
+	}
+
+	return ($sTSize);
+}
+/*****************************************************************************/
+function GetRequestedInfo ($iUserID, $iType)
+/*****************************************************************************/
+{
+	switch ($iType)
+	{
+		case 1: $sInformation = GetUserInfo ($iUserID, 'user_email'); break;
+		default: $sInformation = FALSE; break;
+	}
+
+	return ($sInformation);
 }
 /*****************************************************************************/
 

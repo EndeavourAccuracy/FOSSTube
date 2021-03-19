@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -145,6 +145,8 @@ function UserSwitch ()
 		$_SESSION['fst']['user_id'] = $arUser['id'];
 		$_SESSION['fst']['user_username'] = $arUser['username'];
 		$_SESSION['fst']['user_pref_nsfw'] = $arUser['pref_nsfw'];
+		$_SESSION['fst']['user_pref_cwidth'] = $arUser['pref_cwidth'];
+		$_SESSION['fst']['user_pref_tsize'] = $arUser['pref_tsize'];
 		/***/
 		header ('Location: /');
 	}
@@ -157,9 +159,9 @@ function DisallowTorLogin ()
 print ('
 <form action="/admin/" method="POST">
 <input type="submit" name="action" value="Disallow Tor login" style="margin-top:0;">
-<input type="text" name="url" style="margin-bottom:0;" value="https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1" required>
+<input type="text" name="url" style="margin-bottom:0;" value="https://check.torproject.org/torbulkexitlist?ip=1.1.1.1" required>
 <span style="display:block; font-style:italic; font-size:12px;">
-This will ban all IPs listed <a target="_blank" href="https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1">here</a>. Another list is available <a target="_blank" href="https://openinternet.io/tor/tor-exit-list.txt">here</a>. Tor users can then still view content but not login to add their own.
+This will ban all IPs listed <a target="_blank" href="https://check.torproject.org/torbulkexitlist?ip=1.1.1.1">here</a>. Another list is available <a target="_blank" href="https://openinternet.io/tor/tor-exit-list.txt">here</a>. Tor users can then still view content but not login to add their own.
 </span>
 </form>
 ');
@@ -247,8 +249,8 @@ function StatsSettings ()
 	$result_users = Query ($query_users);
 	$row_users = mysqli_fetch_assoc ($result_users);
 	$iAmount = $row_users['amount'];
-	$sUsers = '<span style="display:block;">Active users: ' . $iAmount .
-		'</span>';
+	$sUsers = '<span style="display:block;">Active users: ' .
+		number_format ($iAmount) . '</span>';
 	print ($sUsers);
 
 	/*** active videos ***/
@@ -272,9 +274,11 @@ function StatsSettings ()
 	$iM = floor (($iSeconds / 60) % 60);
 	$iS = $iSeconds % 60;
 	$iViews = $row_bytes['views'];
-	$sVideosSize = '<span style="display:block;">Active videos: ' . $iAmount .
+	$sVideosSize = '<span style="display:block;">Active videos: ' .
+		number_format ($iAmount) .
 		' (' . $iH . ' hrs, ' . $iM . ' min, ' . $iS . ' sec; ' .
-		$iViews . ' views; ' . GetSizeHuman ($iBytes) . ' used)</span>';
+		number_format ($iViews) . ' views; ' . GetSizeHuman ($iBytes) .
+		' used)</span>';
 	print ($sVideosSize);
 
 	/*** active texts ***/
@@ -308,8 +312,8 @@ function StatsSettings ()
 	$result_comments = Query ($query_comments);
 	$row_comments = mysqli_fetch_assoc ($result_comments);
 	$iAmount = $row_comments['amount'];
-	$sComments = '<span style="display:block;">Active comments: ' . $iAmount .
-		'</span>';
+	$sComments = '<span style="display:block;">Active comments: ' .
+		number_format ($iAmount) . '</span>';
 	print ($sComments);
 
 	$iFileSize = GetSizeBytes ($GLOBALS['max_file_size']);
@@ -391,14 +395,16 @@ function Banned ()
 /*****************************************************************************/
 {
 	print ('<div class="admin-div">');
-	print ('<span style="display:block; font-style:italic;">Banned IP ranges:</span>');
+	print ('<span style="display:block; font-style:italic;">Banned IP ranges (limit 50):</span>');
 	$query_banned = "SELECT
 			banned_ip_from,
 			banned_ip_to,
 			banned_ip,
 			banned_istor,
 			banned_dt
-		FROM `fst_banned`";
+		FROM `fst_banned`
+		ORDER BY banned_dt DESC
+		LIMIT 50";
 	$result_banned = Query ($query_banned);
 	$iRows = mysqli_num_rows ($result_banned);
 	if ($iRows != 0)
@@ -543,6 +549,39 @@ function Searches ()
 
 			print ($sAddedDate . ' - ' . Sanitize ($sText) . ': ' .
 				$iMatchesTitle . ' (+' . $iMatchesOther . ')');
+			$iRow++;
+			if ($iRow != $iRows) { print ('<br>'); }
+		}
+	} else {
+		print ('<span style="font-style:italic;">(none)</span>');
+	}
+	print ('</div>');
+}
+/*****************************************************************************/
+function SearchesTop ()
+/*****************************************************************************/
+{
+	print ('<div class="admin-div">');
+	print ('<span style="display:block; font-style:italic;">Last 7d searches (limit 20):</span>');
+	$query_search = "SELECT
+			COUNT(*) AS hits,
+			search_text
+		FROM `fst_search`
+		WHERE (DATE(search_adddate) BETWEEN DATE_SUB(NOW(),INTERVAL 1 WEEK) AND NOW())
+		GROUP BY search_text
+		ORDER BY hits DESC
+		LIMIT 20";
+	$result_search = Query ($query_search);
+	$iRows = mysqli_num_rows ($result_search);
+	if ($iRows != 0)
+	{
+		$iRow = 0;
+		while ($row_search = mysqli_fetch_assoc ($result_search))
+		{
+			$iHits = intval ($row_search['hits']);
+			$sText = $row_search['search_text'];
+
+			print ($iHits . ' - ' . strtolower ($sText));
 			$iRow++;
 			if ($iRow != $iRows) { print ('<br>'); }
 		}
@@ -699,7 +738,15 @@ function Monetization ()
 			fm.monetization_patreon_yn,
 			fm.monetization_paypalme_yn,
 			fm.monetization_subscribestar_yn,
-			fm.monetization_bitbacker_yn
+			fm.monetization_bitbacker_yn,
+			fm.monetization_crypto1_yn,
+			fm.monetization_crypto1_name,
+			fm.monetization_crypto2_yn,
+			fm.monetization_crypto2_name,
+			fm.monetization_crypto3_yn,
+			fm.monetization_crypto3_name,
+			fm.monetization_crypto4_yn,
+			fm.monetization_crypto4_name
 		FROM `fst_monetization` fm
 		LEFT JOIN `fst_user` fu
 			ON fm.user_id = fu.user_id
@@ -707,6 +754,10 @@ function Monetization ()
 		OR (monetization_paypalme_yn='1')
 		OR (monetization_subscribestar_yn='1')
 		OR (monetization_bitbacker_yn='1')
+		OR (monetization_crypto1_yn='1')
+		OR (monetization_crypto2_yn='1')
+		OR (monetization_crypto3_yn='1')
+		OR (monetization_crypto4_yn='1')
 		ORDER BY user_username";
 	$result_mon = Query ($query_mon);
 	$iRows = mysqli_num_rows ($result_mon);
@@ -720,14 +771,26 @@ function Monetization ()
 			$iPayPalMe = intval ($row_mon['monetization_paypalme_yn']);
 			$iSubscribeStar = intval ($row_mon['monetization_subscribestar_yn']);
 			$iBitbacker = intval ($row_mon['monetization_bitbacker_yn']);
+			$iCrypto1 = intval ($row_mon['monetization_crypto1_yn']);
+			$iCrypto2 = intval ($row_mon['monetization_crypto2_yn']);
+			$iCrypto3 = intval ($row_mon['monetization_crypto3_yn']);
+			$iCrypto4 = intval ($row_mon['monetization_crypto4_yn']);
 			$arProc = array();
 			if ($iPatreon == 1) { array_push ($arProc, 'Patreon'); }
 			if ($iPayPalMe == 1) { array_push ($arProc, 'PayPalMe'); }
 			if ($iSubscribeStar == 1) { array_push ($arProc, 'SubscribeStar'); }
 			if ($iBitbacker == 1) { array_push ($arProc, 'Bitbacker'); }
+			if ($iCrypto1 == 1) { array_push ($arProc,
+				$row_mon['monetization_crypto1_name']); }
+			if ($iCrypto2 == 1) { array_push ($arProc,
+				$row_mon['monetization_crypto2_name']); }
+			if ($iCrypto3 == 1) { array_push ($arProc,
+				$row_mon['monetization_crypto3_name']); }
+			if ($iCrypto4 == 1) { array_push ($arProc,
+				$row_mon['monetization_crypto4_name']); }
 
 			print ('<a href="/user/' . $sUsername . '">' .
-				$sUsername . '</a>: ' . implode (', ', $arProc));
+				$sUsername . '</a>: ' . Sanitize (implode (', ', $arProc)));
 			$iRow++;
 			if ($iRow != $iRows) { print ('<br>'); }
 		}
@@ -970,7 +1033,8 @@ function TextDrafts ()
 			ON fv.user_id = fu.user_id
 		WHERE (fv.video_istext='2')
 		AND (fv.video_deleted='0')
-		GROUP BY (fv.user_id)";
+		GROUP BY (fv.user_id)
+		ORDER BY modified DESC";
 	$result_drafts = Query ($query_drafts);
 	$iRows = mysqli_num_rows ($result_drafts);
 	if ($iRows != 0)
@@ -984,7 +1048,7 @@ function TextDrafts ()
 			$sDateSave = date ('j F Y', strtotime ($row_drafts['modified']));
 
 			print ('<a href="/user/' . $sUsername . '">' . $sUsername . '</a>' .
-				' (' . $iAmount . 'x; ' . $iChars . ' chars;' .
+				' (' . $iAmount . 'x; ' . number_format ($iChars) . ' chars;' .
 				' last update: ' . $sDateSave . ')</a>');
 			$iRow++;
 			if ($iRow != $iRows) { print ('<br>'); }
@@ -1096,6 +1160,238 @@ function SystemMessages ()
 			print (nl2br (Sanitize ($sText)));
 			$iRow++;
 			if ($iRow != $iRows) { print ('<hr class="fst-hr">'); }
+		}
+	} else {
+		print ('<span style="font-style:italic;">(none)</span>');
+	}
+	print ('</div>');
+}
+/*****************************************************************************/
+function CustomizedSizes ()
+/*****************************************************************************/
+{
+	print ('<div class="admin-div">');
+	print ('<span style="display:block; font-style:italic;">Customized sizes:</span>');
+	$query_custom = "SELECT
+			user_username,
+			user_pref_cwidth,
+			user_pref_tsize
+		FROM `fst_user`
+		WHERE (user_pref_cwidth <> 0) || (user_pref_tsize <> 80)
+		ORDER BY user_username";
+	$result_custom = Query ($query_custom);
+	$iRows = mysqli_num_rows ($result_custom);
+	if ($iRows != 0)
+	{
+		$iRow = 0;
+		while ($row_custom = mysqli_fetch_assoc ($result_custom))
+		{
+			$sUsername = $row_custom['user_username'];
+			$sCWidth = CWidth ($row_custom['user_pref_cwidth']);
+			$sTSize = TSize ($row_custom['user_pref_tsize']);
+
+			print ('<a href="/user/' . $sUsername . '">' .
+				$sUsername . '</a>: ' . $sCWidth . ' / ' . $sTSize);
+			$iRow++;
+			if ($iRow != $iRows) { print ('<br>'); }
+		}
+	} else {
+		print ('<span style="font-style:italic;">(none)</span>');
+	}
+	print ('</div>');
+}
+/*****************************************************************************/
+function MostLiked ()
+/*****************************************************************************/
+{
+	print ('<div class="admin-div">');
+	print ('<span style="display:block; font-style:italic;">Most liked (limit 10):</span>');
+	$query_likes = "SELECT
+			fl.video_id,
+			fv.video_title,
+			COUNT(fl.likevideo_id) as likes
+		FROM `fst_likevideo` fl
+		LEFT JOIN `fst_video` fv
+			ON fl.video_id = fv.video_id
+		WHERE (fv.video_deleted='0')
+		GROUP BY fl.video_id
+		HAVING (likes > 0)
+		ORDER BY likes DESC
+		LIMIT 10";
+	$result_likes = Query ($query_likes);
+	$iRows = mysqli_num_rows ($result_likes);
+	if ($iRows != 0)
+	{
+		$iRow = 0;
+		while ($row_likes = mysqli_fetch_assoc ($result_likes))
+		{
+			$iVideoID = intval ($row_likes['video_id']);
+			$sCode = IDToCode ($iVideoID);
+			$sVideoTitle = $row_likes['video_title'];
+			$iLikes = intval ($row_likes['likes']);
+
+			print ($iLikes . ' - <a href="/v/' . $sCode . '">' .
+				Sanitize ($sVideoTitle) . '</a>');
+			$iRow++;
+			if ($iRow != $iRows) { print ('<br>'); }
+		}
+	} else {
+		print ('<span style="font-style:italic;">(none)</span>');
+	}
+	print ('</div>');
+}
+/*****************************************************************************/
+function MostViews ()
+/*****************************************************************************/
+{
+	print ('<div class="admin-div">');
+	print ('<span style="display:block; font-style:italic;">Most views (limit 10):</span>');
+	$query_views = "SELECT
+			video_views,
+			video_id,
+			video_title
+		FROM `fst_video`
+		WHERE (video_deleted='0')
+		ORDER BY video_views DESC
+		LIMIT 10";
+	$result_views = Query ($query_views);
+	$iRows = mysqli_num_rows ($result_views);
+	if ($iRows != 0)
+	{
+		$iRow = 0;
+		while ($row_views = mysqli_fetch_assoc ($result_views))
+		{
+			$iViews = intval ($row_views['video_views']);
+			$iVideoID = intval ($row_views['video_id']);
+			$sCode = IDToCode ($iVideoID);
+			$sVideoTitle = $row_views['video_title'];
+
+			print (number_format ($iViews) . ' - <a href="/v/' . $sCode . '">' .
+				Sanitize ($sVideoTitle) . '</a>');
+			$iRow++;
+			if ($iRow != $iRows) { print ('<br>'); }
+		}
+	} else {
+		print ('<span style="font-style:italic;">(none)</span>');
+	}
+	print ('</div>');
+}
+/*****************************************************************************/
+function Requests ()
+/*****************************************************************************/
+{
+	print ('<div class="admin-div">');
+	print ('<span style="display:block; font-style:italic;">Requests:</span>');
+	$query_requests = "SELECT
+			fu1.user_username AS requestor,
+			fu2.user_username AS recipient,
+			fr.request_type,
+			fr.request_adddate,
+			fr.request_status
+		FROM `fst_request` fr
+		LEFT JOIN `fst_user` fu1
+			ON fr.user_id_requestor = fu1.user_id
+		LEFT JOIN `fst_user` fu2
+			ON fr.user_id_recipient = fu2.user_id
+		ORDER BY request_adddate DESC";
+	$result_requests = Query ($query_requests);
+	$iRows = mysqli_num_rows ($result_requests);
+	if ($iRows != 0)
+	{
+		$iRow = 0;
+		while ($row_requests = mysqli_fetch_assoc ($result_requests))
+		{
+			$sRequestor = $row_requests['requestor'];
+			$sRecipient = $row_requests['recipient'];
+			$iType = intval ($row_requests['request_type']);
+			$sType = $GLOBALS['request_types'][$iType];
+			$sRequestDT = $row_requests['request_adddate'];
+			$sRequestDate = date ('j F Y (H:i)', strtotime ($sRequestDT));
+			$iStatus = intval ($row_requests['request_status']);
+			switch ($iStatus)
+			{
+				case 0: $sColor = '#800000'; $sStatus = 'discarded'; break;
+				case 1: $sColor = '#008000'; $sStatus = 'approved'; break;
+				case 2: $sColor = ''; $sStatus = 'pending'; break;
+			}
+
+			print ($sRequestDate . ' - <a href="/user/' . $sRequestor . '">' .
+				$sRequestor . '</a> asked <a href="/user/' . $sRecipient . '">' .
+				$sRecipient . '</a> for their ' . $sType . ': ');
+			if ($sColor != '') { print ('<span style="color:' . $sColor . ';">'); }
+			print ($sStatus);
+			if ($sColor != '') { print ('</span>'); }
+			$iRow++;
+			if ($iRow != $iRows) { print ('<br>'); }
+		}
+	} else {
+		print ('<span style="font-style:italic;">(none)</span>');
+	}
+	print ('</div>');
+}
+/*****************************************************************************/
+function EmailDomains ()
+/*****************************************************************************/
+{
+	print ('<div class="admin-div">');
+	print ('<span style="display:block; font-style:italic;">Email domains (limit 10):</span>');
+	$query_domains = "SELECT
+			substring_index(user_email, '@', -1) AS domain,
+			COUNT(*) AS count
+		FROM `fst_user`
+		GROUP BY domain
+		ORDER BY count DESC
+		LIMIT 10";
+	$result_domains = Query ($query_domains);
+	$iRows = mysqli_num_rows ($result_domains);
+	if ($iRows != 0)
+	{
+		$iRow = 0;
+		while ($row_domains = mysqli_fetch_assoc ($result_domains))
+		{
+			$sDomain = $row_domains['domain'];
+			$iCount = intval ($row_domains['count']);
+
+			print (number_format ($iCount) . ' - ' . Sanitize ($sDomain));
+			$iRow++;
+			if ($iRow != $iRows) { print ('<br>'); }
+		}
+	} else {
+		print ('<span style="font-style:italic;">(none)</span>');
+	}
+	print ('</div>');
+}
+/*****************************************************************************/
+function DiskUsage ()
+/*****************************************************************************/
+{
+	print ('<div class="admin-div">');
+	print ('<span style="display:block; font-style:italic;">Disk usage (limit 10):</span>');
+	$query_disk = "SELECT
+			SUM(video_preview_bytes + video_360_bytes + video_720_bytes + video_1080_bytes) AS total,
+			fu.user_username
+		FROM `fst_video` fv
+		LEFT JOIN `fst_user` fu
+			ON fv.user_id = fu.user_id
+		WHERE (video_deleted = '0')
+		AND (user_deleted = '0')
+		GROUP BY fv.user_id
+		ORDER BY total DESC
+		LIMIT 10";
+	$result_disk = Query ($query_disk);
+	$iRows = mysqli_num_rows ($result_disk);
+	if ($iRows != 0)
+	{
+		$iRow = 0;
+		while ($row_disk = mysqli_fetch_assoc ($result_disk))
+		{
+			$iBytes = intval ($row_disk['total']);
+			$sUsername = $row_disk['user_username'];
+
+			print ('<a href="/user/' . $sUsername . '">' . $sUsername .
+				'</a> - ' . GetSizeHuman ($iBytes));
+			$iRow++;
+			if ($iRow != $iRows) { print ('<br>'); }
 		}
 	} else {
 		print ('<span style="font-style:italic;">(none)</span>');
@@ -1245,6 +1541,7 @@ if (!IsAdmin())
 		Accounts();
 		Subscriptions();
 		Searches();
+		SearchesTop();
 		Comments();
 		Referrers (30);
 		Referrers (2);
@@ -1259,6 +1556,12 @@ if (!IsAdmin())
 		Folders();
 		IPMultipleAccounts();
 		SystemMessages();
+		CustomizedSizes();
+		MostLiked();
+		MostViews();
+		Requests();
+		EmailDomains();
+		DiskUsage();
 	}
 }
 HTMLEnd();

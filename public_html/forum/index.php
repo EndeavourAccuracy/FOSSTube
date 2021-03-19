@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -112,6 +112,7 @@ See the <a href="/terms/">Terms of service</a> for more information.
 
 <input type="hidden" id="board" value="' . $iBoard . '">
 <label for="title" class="lbl">Title:</label>
+<p style="margin-bottom:5px; font-style:italic;">(Try to make your title descriptive. That is, summarize the substance of your topic. Avoid nondescript titles such as "check this out" or "we need this".)</p>
 <input type="text" id="title" maxlength="100" style="width:600px; max-width:100%;">
 <label for="description" class="lbl">Text:</label>
 <textarea id="description" style="display:block; width:600px; max-width:100%; height:200px;"></textarea>
@@ -265,15 +266,18 @@ if (!isset ($_GET['board']))
 
 	/*** $sBoardName ***/
 	$query_board = "SELECT
-			board_name
+			board_name,
+			board_description
 		FROM `fst_board`
 		WHERE (board_id='" . $iBoard . "')";
 	$result_board = Query ($query_board);
 	$row_board = mysqli_fetch_assoc ($result_board);
 	$sBoardName = $row_board['board_name'];
+	$sBoardDesc = $row_board['board_description'];
 
 	HTMLStart ('Board "' . $sBoardName . '"', 'Forum', 'Forum', 0, FALSE);
 	print ('<h1>Board "' . $sBoardName . '"</h1>');
+	if ($row_board['board_description'] != '') { print ('<p style="text-align:center;">' . Sanitize ($row_board['board_description']) . '</p>'); }
 
 	LinkBack ('/forum/', 'Forum boards');
 

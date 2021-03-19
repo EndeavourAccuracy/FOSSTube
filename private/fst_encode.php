@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -280,10 +280,13 @@ if (flock ($rLock, LOCK_EX|LOCK_NB))
 		$query_todo = "SELECT
 				video_id,
 				user_id,
+				video_title,
 				video_preview,
 				video_360,
 				video_720,
-				video_1080
+				video_1080,
+				video_adddate,
+				video_uploadedmd5
 			FROM `fst_video`
 			WHERE (video_deleted='0')
 			AND ((video_preview='2') OR
@@ -299,47 +302,74 @@ if (flock ($rLock, LOCK_EX|LOCK_NB))
 			$row_todo = mysqli_fetch_assoc ($result_todo);
 			$iID = $row_todo['video_id'];
 			$iUserID = $row_todo['user_id'];
+			$sTitle = $row_todo['video_title'];
+			$sAddDate = $row_todo['video_adddate'];
+			$sMD5 = $row_todo['video_uploadedmd5'];
 			$sVideoURL = dirname (__FILE__) .
 				'/../' . $GLOBALS['public_html'] . '/uploads/' . $iID;
 
-			/*** $fSeconds ***/
-			$sExec = $GLOBALS['ffprobe'] . ' -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "' . $sVideoURL . '" 2>&1';
-			$fSeconds = floatval (shell_exec ($sExec));
-			/***/
-			$query_seconds = "UPDATE `fst_video` SET
-					video_seconds='" . round ($fSeconds) . "'
-				WHERE (video_id='" . $iID . "')";
-			Query ($query_seconds);
-
-			/*** $iWidth ***/
-			$sExec = $GLOBALS['ffprobe'] . ' -v error -select_streams v:0 -show_entries stream=width -of csv=s=x:p=0 "' . $sVideoURL . '" 2>&1';
-			$iWidth = intval (shell_exec ($sExec));
-
-			/*** $iHeight ***/
-			$sExec = $GLOBALS['ffprobe'] . ' -v error -select_streams v:0 -show_entries stream=height -of csv=s=x:p=0 "' . $sVideoURL . '" 2>&1';
-			$iHeight = intval (shell_exec ($sExec));
-
-			if ($row_todo['video_preview'] == 2)
+			/*** Duplicate? ***/
+			$query_dupl = "SELECT
+					COUNT(*) AS duplicates
+				FROM `fst_video`
+				WHERE (user_id='" . $iUserID . "')
+				AND (video_uploadedmd5='" . $sMD5 . "')
+				AND (video_adddate < '" . $sAddDate . "')
+				AND (video_deleted='0')";
+			$result_dupl = Query ($query_dupl);
+			$row_dupl = mysqli_fetch_assoc ($result_dupl);
+			if ($row_dupl['duplicates'] == 0)
 			{
-				$iAdded = Encode ('preview', $sVideoURL, $iID, $fSeconds);
-				Added ($iID, 'preview', $iAdded);
-			} else if ($row_todo['video_360'] == 2) {
-				$iAdded = Encode ('360', $sVideoURL, $iID, 0);
-				Added ($iID, '360', $iAdded);
-			} else if ($row_todo['video_720'] == 2) {
-				if (($iWidth >= 1280) || ($iHeight >= 720))
-				{
-					$iAdded = Encode ('720', $sVideoURL, $iID, 0);
-				} else { $iAdded = 0; }
-				Added ($iID, '720', $iAdded);
-			} else { /*** $row_todo['video_1080'] == 2 ***/
-				if (($iWidth >= 1920) || ($iHeight >= 1080))
-				{
-					$iAdded = Encode ('1080', $sVideoURL, $iID, 0);
-				} else { $iAdded = 0; }
-				Added ($iID, '1080', $iAdded);
+				/*** $fSeconds ***/
+				$sExec = $GLOBALS['ffprobe'] . ' -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "' . $sVideoURL . '" 2>&1';
+				$fSeconds = floatval (shell_exec ($sExec));
+				/***/
+				$query_seconds = "UPDATE `fst_video` SET
+						video_seconds='" . round ($fSeconds) . "'
+					WHERE (video_id='" . $iID . "')";
+				Query ($query_seconds);
 
-				MessageSubscribers ($iID, $iUserID);
+				/*** $iWidth ***/
+				$sExec = $GLOBALS['ffprobe'] . ' -v error -select_streams v:0 -show_entries stream=width -of csv=s=x:p=0 "' . $sVideoURL . '" 2>&1';
+				$iWidth = intval (shell_exec ($sExec));
+
+				/*** $iHeight ***/
+				$sExec = $GLOBALS['ffprobe'] . ' -v error -select_streams v:0 -show_entries stream=height -of csv=s=x:p=0 "' . $sVideoURL . '" 2>&1';
+				$iHeight = intval (shell_exec ($sExec));
+
+				if ($row_todo['video_preview'] == 2)
+				{
+					$iAdded = Encode ('preview', $sVideoURL, $iID, $fSeconds);
+					Added ($iID, 'preview', $iAdded);
+				} else if ($row_todo['video_360'] == 2) {
+					$iAdded = Encode ('360', $sVideoURL, $iID, 0);
+					Added ($iID, '360', $iAdded);
+				} else if ($row_todo['video_720'] == 2) {
+					if (($iWidth >= 1280) || ($iHeight >= 720))
+					{
+						$iAdded = Encode ('720', $sVideoURL, $iID, 0);
+					} else { $iAdded = 0; }
+					Added ($iID, '720', $iAdded);
+				} else { /*** $row_todo['video_1080'] == 2 ***/
+					if (($iWidth >= 1920) || ($iHeight >= 1080))
+					{
+						$iAdded = Encode ('1080', $sVideoURL, $iID, 0);
+					} else { $iAdded = 0; }
+					Added ($iID, '1080', $iAdded);
+
+					MessageSubscribers ($iID, $iUserID);
+
+					unlink ($sVideoURL);
+				}
+			} else {
+				$query_delete = "UPDATE `fst_video` SET
+						video_deleted='4'
+					WHERE (video_id='" . $iID . "')";
+				Query ($query_delete);
+
+				CreateMessage (-1, $iUserID, 'Your upload "' . $sTitle . '" was' .
+					' automatically rejected, because your account' .
+					' already contains this video.');
 
 				unlink ($sVideoURL);
 			}

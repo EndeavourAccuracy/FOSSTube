@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -92,6 +92,9 @@ Allowed characters for the password are letters (a-z, A-Z), numbers (0-9), minus
 </span>
 <span style="display:block; margin-bottom:10px;">
 <a href="/monetization/">Monetization</a>
+</span>
+<span style="display:block; margin-bottom:10px;">
+<a href="/history/">History</a> / <a href="/subscriptions/">Subscriptions</a>
 </span>
 <span style="display:block; margin-bottom:10px;">
 <a href="/rename/">Rename username</a>

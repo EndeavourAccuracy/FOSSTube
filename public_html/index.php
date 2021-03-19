@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -215,6 +215,7 @@ Other results (' . $iMatchesOther . ') for "' . Sanitize ($sQuery) . '":
 			ON fu.user_id = fv.user_id
 		WHERE (fu.user_username LIKE '%" . str_replace ('%', '\%',
 			mysqli_real_escape_string ($GLOBALS['link'], $sQuery)) . "%')
+		AND (fu.user_deleted='0')
 		GROUP BY fu.user_username
 		ORDER BY views DESC
 		LIMIT 25";

@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -47,7 +47,7 @@ function RecentReferrers ($iUserID)
 	{
 		$iRow = 0;
 		print ('<div id="referrers-div">');
-		print ('<span style="display:block; font-style:italic;">Last 30d referrers:</span>');
+		print ('<span style="display:block; font-style:italic;">Last 30d <a target="_blank" href="https://en.wikipedia.org/wiki/HTTP_referer">referrers</a>:</span>');
 		print ('<span style="display:block; color:#414dc5;">Always be careful when visiting URLs (http links) that seem tailored specifically for you, as these may be (ab)used to obtain the IP address (' . GetIP() . ') of your Internet device.</span>');
 		while ($row_referrers = mysqli_fetch_assoc ($result_referrers))
 		{
@@ -59,6 +59,64 @@ function RecentReferrers ($iUserID)
 
 			print ($sRefURL . ' (' . $iRefCount . 'x) to <a href="/v/' . $sCode . '">' .
 				Sanitize ($sVideoTitle) . '</a>');
+			$iRow++;
+			if ($iRow != $iRows) { print ('<br>'); }
+		}
+		print ('</div>');
+	}
+}
+/*****************************************************************************/
+function DuplicatesOtherAccounts ($iUserID)
+/*****************************************************************************/
+{
+	$query_dupl = "SELECT
+			fv.video_id,
+			fu.user_username,
+			fv.video_title,
+			fv.video_uploadedmd5
+		FROM `fst_video` fv
+		LEFT JOIN `fst_user` fu
+			ON fv.user_id = fu.user_id
+		WHERE (fv.video_uploadedmd5 IN
+			(SELECT
+					DISTINCT(video_uploadedmd5)
+				FROM `fst_video`
+				WHERE (user_id='" . $iUserID . "')
+				AND (video_uploadedmd5 <> '')
+				AND (video_deleted='0')
+			))
+		AND (fv.user_id<>'" . $iUserID . "')
+		AND (fv.video_deleted='0')
+		ORDER BY user_username, video_title";
+	$result_dupl = Query ($query_dupl);
+	$iRows = mysqli_num_rows ($result_dupl);
+	if ($iRows != 0)
+	{
+		$iRow = 0;
+		print ('<div id="duplicates-div">');
+		print ('<span style="display:block; font-style:italic;">Video duplicates (other accounts):</span>');
+		while ($row_dupl = mysqli_fetch_assoc ($result_dupl))
+		{
+			$iDuplVideoID = intval ($row_dupl['video_id']);
+			$sDuplCode = IDToCode ($iDuplVideoID);
+			$sDuplUsername = $row_dupl['user_username'];
+			$sDuplTitle = $row_dupl['video_title'];
+			$sDuplMD5 = $row_dupl['video_uploadedmd5'];
+
+			$query_your = "SELECT
+					video_id,
+					video_title
+				FROM `fst_video`
+				WHERE (user_id='" . $iUserID . "')
+				AND (video_uploadedmd5='" . $sDuplMD5 . "')
+				AND (video_deleted='0')";
+			$result_your = Query ($query_your);
+			$row_your = mysqli_fetch_assoc ($result_your);
+			$iYourVideoID = intval ($row_your['video_id']);
+			$sYourCode = IDToCode ($iYourVideoID);
+			$sYourTitle = $row_your['video_title'];
+
+			print ('User "' . $sDuplUsername . '" published <a href="/v/' . $sDuplCode . '">' . Sanitize ($sDuplTitle) . '</a>, which is the same as your <a href="/v/' . $sYourCode . '">' . Sanitize ($sYourTitle) . '</a>.');
 			$iRow++;
 			if ($iRow != $iRows) { print ('<br>'); }
 		}
@@ -121,6 +179,8 @@ if (!isset ($_SESSION['fst']['user_id']))
 		}
 
 		RecentReferrers ($_SESSION['fst']['user_id']);
+
+		DuplicatesOtherAccounts ($_SESSION['fst']['user_id']);
 
 		print ('<form action="/delete/" method="POST">');
 		$arFilters = array ('threshold' => '0', 'nsfw' => '3');

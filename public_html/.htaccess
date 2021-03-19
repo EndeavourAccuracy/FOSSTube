@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Zlib
-# FSTube v1.0 (February 2020)
-# Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+# FSTube v1.1 (March 2021)
+# Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
 #
 # This software is provided 'as-is', without any express or implied
 # warranty.  In no event will the authors be held liable for any damages
@@ -56,6 +56,10 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^text/(.*)$ /text/index.php?code=$1 [NC,L,QSA]
 
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^request/(.*)/([0-9]*)$ /request/index.php?recipient=$1&type=$2 [NC,L,QSA]
+
 RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?yourdomain.com [NC]
 RewriteRule \.(mp4)$ - [NC,F,L]
 
@@ -99,3 +103,5 @@ ForceType video/mp4
 <FilesMatch "\.(jpg|png|gif|js|css)$">
 Header set Cache-Control "max-age=86400"
 </FilesMatch>
+
+ErrorDocument 404 /404.php

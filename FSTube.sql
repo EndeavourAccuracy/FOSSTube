@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,8 +23,7 @@ CREATE DATABASE `fst` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 USE `fst`;
 
 CREATE USER 'fst_user'@'%' IDENTIFIED BY 'YOURPASS';
-GRANT ALL PRIVILEGES ON fst.* TO 'fst_user'@'%' IDENTIFIED BY 'YOURPASS';
-GRANT ALL PRIVILEGES ON fst.* TO 'fst_user'@'localhost' IDENTIFIED BY 'YOURPASS';
+GRANT ALL PRIVILEGES ON fst.* TO 'fst_user';
 FLUSH PRIVILEGES;
 
 CREATE TABLE `fst_user` (
@@ -47,6 +46,8 @@ CREATE TABLE `fst_user` (
 	`user_regdt` DATETIME NOT NULL,
 	`user_lastlogindt` DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',
 	`user_pref_nsfw` tinyint(1) NOT NULL DEFAULT '0',
+	`user_pref_cwidth` int(11) NOT NULL DEFAULT 0,
+	`user_pref_tsize` int(11) NOT NULL DEFAULT 80,
 	PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE `fst_faillogin` (
@@ -320,29 +321,46 @@ CREATE TABLE `fst_monetization` (
 	`monetization_subscribestar_url` VARCHAR(250) NOT NULL,
 	`monetization_bitbacker_yn` tinyint(1) NOT NULL DEFAULT '0',
 	`monetization_bitbacker_url` VARCHAR(250) NOT NULL,
+	`monetization_crypto1_yn` tinyint(1) NOT NULL DEFAULT '0',
+	`monetization_crypto1_name` VARCHAR(30) NOT NULL,
+	`monetization_crypto1_address` VARCHAR(250) NOT NULL,
+	`monetization_crypto1_qr` tinyint(1) NOT NULL DEFAULT '2',
+	`monetization_crypto2_yn` tinyint(1) NOT NULL DEFAULT '0',
+	`monetization_crypto2_name` VARCHAR(30) NOT NULL,
+	`monetization_crypto2_address` VARCHAR(250) NOT NULL,
+	`monetization_crypto2_qr` tinyint(1) NOT NULL DEFAULT '2',
+	`monetization_crypto3_yn` tinyint(1) NOT NULL DEFAULT '0',
+	`monetization_crypto3_name` VARCHAR(30) NOT NULL,
+	`monetization_crypto3_address` VARCHAR(250) NOT NULL,
+	`monetization_crypto3_qr` tinyint(1) NOT NULL DEFAULT '2',
+	`monetization_crypto4_yn` tinyint(1) NOT NULL DEFAULT '0',
+	`monetization_crypto4_name` VARCHAR(30) NOT NULL,
+	`monetization_crypto4_address` VARCHAR(250) NOT NULL,
+	`monetization_crypto4_qr` tinyint(1) NOT NULL DEFAULT '2',
 	PRIMARY KEY (`monetization_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE `fst_board` (
 	`board_id` int(11) NOT NULL AUTO_INCREMENT,
 	`board_name` varchar(100) NOT NULL,
+	`board_description` varchar(100) NOT NULL,
 	`board_order` int(11) NOT NULL,
 	PRIMARY KEY (`board_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-INSERT INTO `fst_board` VALUES (NULL, 'Entertainment', '10');
-INSERT INTO `fst_board` VALUES (NULL, 'Environment', '20');
-INSERT INTO `fst_board` VALUES (NULL, 'FSTube', '30');
-INSERT INTO `fst_board` VALUES (NULL, 'General', '40');
-INSERT INTO `fst_board` VALUES (NULL, 'History', '50');
-INSERT INTO `fst_board` VALUES (NULL, 'Law and order', '60');
-INSERT INTO `fst_board` VALUES (NULL, 'Media and culture', '70');
-INSERT INTO `fst_board` VALUES (NULL, 'Philosophy', '80');
-INSERT INTO `fst_board` VALUES (NULL, 'Politics and economics', '90');
-INSERT INTO `fst_board` VALUES (NULL, 'Psychiatry', '100');
-INSERT INTO `fst_board` VALUES (NULL, 'Religion', '110');
-INSERT INTO `fst_board` VALUES (NULL, 'Science, biology, and health', '120');
-INSERT INTO `fst_board` VALUES (NULL, 'Sexuality', '130');
-INSERT INTO `fst_board` VALUES (NULL, 'Sports', '140');
-INSERT INTO `fst_board` VALUES (NULL, 'Technology', '150');
+INSERT INTO `fst_board` VALUES (NULL, 'Entertainment', '', '10');
+INSERT INTO `fst_board` VALUES (NULL, 'Environment', '', '20');
+INSERT INTO `fst_board` VALUES (NULL, 'FSTube', '', '30');
+INSERT INTO `fst_board` VALUES (NULL, 'General', '', '40');
+INSERT INTO `fst_board` VALUES (NULL, 'History', '', '50');
+INSERT INTO `fst_board` VALUES (NULL, 'Law and order', '', '60');
+INSERT INTO `fst_board` VALUES (NULL, 'Media and culture', '', '70');
+INSERT INTO `fst_board` VALUES (NULL, 'Philosophy', '', '80');
+INSERT INTO `fst_board` VALUES (NULL, 'Politics and economics', '', '90');
+INSERT INTO `fst_board` VALUES (NULL, 'Psychiatry', '', '100');
+INSERT INTO `fst_board` VALUES (NULL, 'Religion', '', '110');
+INSERT INTO `fst_board` VALUES (NULL, 'Science, biology, and health', '', '120');
+INSERT INTO `fst_board` VALUES (NULL, 'Sexuality', '', '130');
+INSERT INTO `fst_board` VALUES (NULL, 'Sports', '', '140');
+INSERT INTO `fst_board` VALUES (NULL, 'Technology', '', '150');
 CREATE TABLE `fst_folder` (
 	`folder_id` int(11) NOT NULL AUTO_INCREMENT,
 	`user_id` int(11) NOT NULL,
@@ -357,4 +375,13 @@ CREATE TABLE `fst_folderitem` (
 	`video_id` int(11) NOT NULL,
 	`folderitem_order` int(11) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`folderitem_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `fst_request` (
+	`request_id` int(11) NOT NULL AUTO_INCREMENT,
+	`user_id_requestor` int(11) NOT NULL,
+	`user_id_recipient` int(11) NOT NULL,
+	`request_type` tinyint(1) NOT NULL,
+	`request_adddate` DATETIME NOT NULL,
+	`request_status` tinyint(1) NOT NULL DEFAULT '2',
+	PRIMARY KEY (`request_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

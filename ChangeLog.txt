@@ -1,3 +1,15 @@
+v1.1 (March 19, 2021) - Norbert de Jonge
+--------------------
++ Video playback speed control.
++ Users can browse their comment history and subscriptions.
++ User preferences: home container width, thumbnail size.
++ Users can send and receive information requests (email address).
++ Admins can change forum topic titles.
++ Customizable 404 Not Found page.
++ Disallows users from adding duplicate videos to the same account (MD5), and the video overview lists duplicate videos on other accounts (again, MD5).
+* In addition to processors, monetization now includes cryptocurrencies.
+* Expanded the admin panel.
+
 v1.0 (February 4, 2020) - Norbert de Jonge
 --------------------
 + Initial release.

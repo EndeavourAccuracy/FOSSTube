@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -184,6 +184,14 @@ select {
 	max-height:300px;
 	overflow-y:auto;
 }
+#title-span {
+	display:block;
+	margin:0 auto;
+	margin-top:10px;
+	width:400px;
+	max-width:100%;
+	padding:5px;
+}
 .fst-hr {
 	margin:5px 0;
 	border:none;
@@ -295,13 +303,13 @@ select {
 	padding:5px;
 	margin:10px 0 0 10px;
 }
-#referrers-div {
+#referrers-div, #duplicates-div {
 	margin-bottom:5px;
 	padding:10px;
 	max-height:150px;
 	overflow-y:auto;
 }
-.processor {
+.processor, .crypto {
 	padding:5px;
 	margin-bottom:10px;
 	max-width:600px;
@@ -310,6 +318,12 @@ select {
 	display:inline-block;
 	padding:5px;
 	margin:0 10px 10px 0;
+}
+.crypto-blk {
+	display:block;
+	overflow-x:auto;
+	padding:5px;
+	margin-bottom:10px;
 }
 #donate {
 	display:block;
@@ -325,6 +339,7 @@ select {
 	display:block;
 	max-height:60px;
 	overflow-y:scroll;
+	padding:10px;
 	text-align:left;
 }
 @keyframes blinker {
@@ -342,7 +357,7 @@ select {
 #topics-header {
 	font-style:italic;
 }
-.message {
+.message, .request {
 	display:block;
 	margin:10px 0;
 	padding:5px;

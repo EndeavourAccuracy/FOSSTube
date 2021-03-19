@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -94,6 +94,37 @@ function VideoURL ($sCode, $sHeight)
 	$sURL .= '.mp4';
 
 	return ($sURL);
+}
+/*****************************************************************************/
+function CreateMessage ($iSenderID, $iRecipientID, $sText)
+/*****************************************************************************/
+{
+	/* $iSenderID:
+	 * -1 = system
+	 * 0 = "an administrator"
+	 * positive number = user ID
+	 */
+
+	$sDTNow = date ('Y-m-d H:i:s');
+
+	$query_message = "INSERT INTO `fst_message` SET
+		user_id_sender='" . $iSenderID . "',
+		user_id_recipient='" . $iRecipientID . "',
+		message_text='" . mysqli_real_escape_string
+			($GLOBALS['link'], $sText) . "',
+		video_id='0',
+		message_adddate='" . $sDTNow . "',
+		message_cleared='0'";
+	Query ($query_message);
+}
+/*****************************************************************************/
+function Sanitize ($sUserInput)
+/*****************************************************************************/
+{
+	$sReturn = htmlentities ($sUserInput, ENT_QUOTES);
+	$sReturn = str_ireplace ('javascript', 'JS', $sReturn);
+
+	return ($sReturn);
 }
 /*****************************************************************************/
 ?>

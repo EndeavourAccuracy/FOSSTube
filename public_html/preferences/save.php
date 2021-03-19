@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,19 +25,30 @@ include_once (dirname (__FILE__) . '/../fst_base.php');
 if ((isset ($_POST['csrf_token'])) &&
 	(TokenCorrect ($_POST['csrf_token'])))
 {
-	if (isset ($_POST['nsfw_yn']))
+	if ((isset ($_POST['nsfw_yn'])) &&
+		(isset ($_POST['cwidth'])) &&
+		(isset ($_POST['tsize'])))
 	{
 		$iNSFW = intval ($_POST['nsfw_yn']);
+		$iCWidth = intval ($_POST['cwidth']);
+		$iTSize = intval ($_POST['tsize']);
 
-		if (($iNSFW == 0) || ($iNSFW == 1))
+		if ((($iNSFW == 0) || ($iNSFW == 1)) &&
+			(($iCWidth >= 0) && ($iCWidth <= 13)) &&
+			(($iTSize == 100) || ($iTSize == 90) || ($iTSize == 80) ||
+				($iTSize == 70) || ($iTSize == 60) || ($iTSize == 50)))
 		{
 			$query_upd = "UPDATE `fst_user` SET
-					user_pref_nsfw='" . $iNSFW . "'
+					user_pref_nsfw='" . $iNSFW . "',
+					user_pref_cwidth='" . $iCWidth . "',
+					user_pref_tsize='" . $iTSize . "'
 				WHERE (user_id='" . $_SESSION['fst']['user_id'] . "')";
 			Query ($query_upd);
 			if (mysqli_affected_rows ($GLOBALS['link']) == 1)
 			{
 				$_SESSION['fst']['user_pref_nsfw'] = $iNSFW;
+				$_SESSION['fst']['user_pref_cwidth'] = $iCWidth;
+				$_SESSION['fst']['user_pref_tsize'] = $iTSize;
 				/***/
 				$_SESSION['fst']['preferences-saved'] = 1;
 				$arResult['result'] = 1;

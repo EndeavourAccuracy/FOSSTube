@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -44,7 +44,9 @@ if ((isset ($_POST['username'])) &&
 				user_id,
 				user_username,
 				user_hash,
-				user_pref_nsfw
+				user_pref_nsfw,
+				user_pref_cwidth,
+				user_pref_tsize
 			FROM `fst_user`
 			WHERE (user_username='" . $sUsername . "')
 			AND (user_deleted='0')";
@@ -56,6 +58,8 @@ if ((isset ($_POST['username'])) &&
 			$sUsername = $row_hash['user_username'];
 			$sHash = $row_hash['user_hash'];
 			$iPrefNSFW = intval ($row_hash['user_pref_nsfw']);
+			$iPrefCWidth = intval ($row_hash['user_pref_cwidth']);
+			$iPrefTSize = intval ($row_hash['user_pref_tsize']);
 			$sDTNow = date ('Y-m-d H:i:s');
 
 			if (password_verify ($sPassword, $sHash))
@@ -64,6 +68,8 @@ if ((isset ($_POST['username'])) &&
 				$_SESSION['fst']['user_id'] = $iUserID;
 				$_SESSION['fst']['user_username'] = $sUsername;
 				$_SESSION['fst']['user_pref_nsfw'] = $iPrefNSFW;
+				$_SESSION['fst']['user_pref_cwidth'] = $iPrefCWidth;
+				$_SESSION['fst']['user_pref_tsize'] = $iPrefTSize;
 				/***/
 				unset ($_SESSION['fst']['step_signup']);
 				unset ($_SESSION['fst']['step_forgot']);

@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,7 @@ function Found ($sUser, $row_user)
 {
 	$iUserID = $row_user['user_id'];
 	$sInfo = $row_user['user_information'];
-	$sRegDate = date ('d F Y', strtotime ($row_user['user_regdt']));
+	$sRegDate = date ('j F Y', strtotime ($row_user['user_regdt']));
 
 	$arData['video_id'] = 0;
 	$arData['user_id'] = $iUserID;
@@ -81,6 +81,9 @@ print ('
 </a>
 <a target="_blank" href="/xml/feed.php?user=' . $sUser . '">
 <img src="/images/icon_rss.png" title="RSS" alt="RSS">
+</a>
+<a target="_blank" href="/request/' . $sUser . '/1">
+<img src="/images/icon_email.png" title="request email address" alt="request email address">
 </a>
 </div>
 </div>

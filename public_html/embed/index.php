@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -98,7 +98,7 @@ if (isset ($_GET['code']))
 
 print ('
 <div>
-<video id="video" poster="' . ThumbURL ($sCode, '720', $iThumb, TRUE) . '" preload="metadata" style="max-width:100%;" title="' . Sanitize ($sTitle) . '" controls>
+<video id="video" poster="' . ThumbURL ($sCode, '720', $iThumb, TRUE) . '" preload="metadata" onloadstart="this.volume=0.5" style="max-width:100%;" title="' . Sanitize ($sTitle) . '" controls>
 <source src="' . VideoURL ($sCode, '360') . $sSeconds . '" type="video/mp4">
 Your browser or OS does not support HTML5 MP4 video with H.264.
 </video>

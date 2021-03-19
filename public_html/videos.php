@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -35,8 +35,12 @@ $("[data-name=\"hover\"]").mouseenter(function(){
 	{
 		var title = $(this).data("title");
 		title = title.replace(/\"/g, "&quot;");
+		style = $(this).find("img").attr("style");
+		if (style == "undefined")
+			{ style = ""; }
+				else { style = " style=\"" + style + "\""; }
 		var video = "<video src=\"" + preview + "\" alt=\"" +
-			title + "\" class=\"thumb-or-preview\" autoplay loop>";
+			title + "\" class=\"thumb-or-preview\"" + style + " autoplay loop>";
 		$(this).html(video);
 		$(this).data("active","video");
 	}
@@ -48,8 +52,12 @@ $("[data-name=\"hover\"]").mouseleave(function(){
 		var thumb = $(this).data("thumb");
 		var title = $(this).data("title");
 		title = title.replace(/\"/g, "&quot;");
+		style = $(this).find("video").attr("style");
+		if (style == "undefined")
+			{ style = ""; }
+				else { style = " style=\"" + style + "\""; }
 		var image = "<img src=\"" + thumb + "\" alt=\"" +
-			title + "\" class=\"thumb-or-preview\">";
+			title + "\" class=\"thumb-or-preview\"" + style + ">";
 		$(this).html(image);
 		$(this).data("active","thumb");
 	}

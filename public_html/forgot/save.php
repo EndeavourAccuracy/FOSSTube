@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -56,6 +56,10 @@ if ((isset ($_POST['csrf_token'])) &&
 			$_SESSION['fst']['user_username'] = $_SESSION['fst']['user_usernametmp'];
 			$_SESSION['fst']['user_pref_nsfw'] =
 				intval (GetUserInfo ($iUserID, 'user_pref_nsfw'));
+			$_SESSION['fst']['user_pref_cwidth'] =
+				intval (GetUserInfo ($iUserID, 'user_pref_cwidth'));
+			$_SESSION['fst']['user_pref_tsize'] =
+				intval (GetUserInfo ($iUserID, 'user_pref_tsize'));
 			$_SESSION['fst']['step_forgot'] = 1;
 
 			$arResult['result'] = 1;

@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,8 @@ if (isset ($_SESSION['fst']['user_id']))
 	unset ($_SESSION['fst']['user_id']);
 	unset ($_SESSION['fst']['user_username']);
 	unset ($_SESSION['fst']['user_pref_nsfw']);
+	unset ($_SESSION['fst']['user_pref_cwidth']);
+	unset ($_SESSION['fst']['user_pref_tsize']);
 	/***/
 	unset ($_SESSION['fst']['step_signup']);
 	unset ($_SESSION['fst']['step_forgot']);

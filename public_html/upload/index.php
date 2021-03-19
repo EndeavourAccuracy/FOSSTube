@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -71,7 +71,7 @@ function upload_ajax (total, cl) {
 		processData: false,
 		xhr: function() {
 			var xhr = $.ajaxSettings.xhr();
-			if (xhr.upload) { 
+			if (xhr.upload) {
 				xhr.upload.addEventListener("progress", function(event) {
 					var percent = 0;
 					if (event.lengthComputable) {

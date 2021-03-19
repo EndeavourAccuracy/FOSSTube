@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,92 @@
 
 include_once (dirname (__FILE__) . '/../fst_base.php');
 
+/*****************************************************************************/
+function Requests ($iUserID)
+/*****************************************************************************/
+{
+	$arNewRequests = NewRequests ($iUserID);
+	if (count ($arNewRequests) > 0)
+	{
+		print ('<div style="margin-top:10px;">');
+		foreach ($arNewRequests as $iRequest)
+		{
+			print ('<input type="hidden" name="request[' .
+				$iRequest . ']" value="' . $iRequest . '">');
+
+			$query_request = "SELECT
+					fu.user_username,
+					fr.request_type,
+					fr.request_adddate
+				FROM `fst_request` fr
+				LEFT JOIN `fst_user` fu
+					ON fr.user_id_requestor = fu.user_id
+				WHERE (request_id='" . $iRequest . "')";
+			$result_request = Query ($query_request);
+			$row_request = mysqli_fetch_assoc ($result_request);
+
+			$sUserRequestor = $row_request['user_username'];
+			$iType = intval ($row_request['request_type']);
+			$sType = $GLOBALS['request_types'][$iType];
+			$sRequestDT = $row_request['request_adddate'];
+			$sRequestDate = date ('j F Y', strtotime ($sRequestDT));
+
+print ('
+<span class="request">
+' . $sRequestDate . ' - User <a href="/user/' . $sUserRequestor . '">' . $sUserRequestor . '</a> requests your ' . $sType . ' "' . Sanitize (GetRequestedInfo ($iUserID, $iType)) . '". You may approve (privately send this information) or discard their request.
+<br>
+<input type="button" id="request-a-' . $iRequest . '" value="Approve" data-requestor="' . $sUserRequestor . '" data-type="' . $sType . '">
+<input type="button" id="request-d-' . $iRequest . '" value="Discard">
+</span>
+');
+		}
+
+print ('
+<script>
+$("[id^=request]").click(function(){
+	var request = $(this).attr("id").replace("request-","");
+	var action = request.charAt(0);
+	if (action == "a")
+	{
+		var question = "Really send your " + $(this).data("type") +
+			" to " + $(this).data("requestor") + "?";
+		var request_id = request.replace("a-","");
+	} else {
+		var question = "";
+		var request_id = request.replace("d-","");
+	}
+	if ((question == "") || (confirm (question))) {
+		$.ajax({
+			type: "POST",
+			url: "/request/action.php",
+			data: ({
+				action : action,
+				request_id : request_id,
+				csrf_token : "' . $_SESSION['fst']['csrf_token'] . '"
+			}),
+			dataType: "json",
+			success: function(data) {
+				var result = data["result"];
+				var error = data["error"];
+				if (result == 1)
+				{
+					window.location.replace("/notifications/");
+				} else {
+					alert(error);
+				}
+			},
+			error: function() {
+				alert("Error calling action.php.");
+			}
+		});
+	}
+});
+</script>
+');
+
+		print ('</div>');
+	}
+}
 /*****************************************************************************/
 function Messages ($iUserID)
 /*****************************************************************************/
@@ -176,6 +262,18 @@ if (!isset ($_SESSION['fst']['user_id']))
 				Query ($query_delete);
 			}
 		}
+		if (isset ($_POST['request']))
+		{
+			foreach ($_POST['request'] as $sRequest)
+			{
+				$iRequestID = intval ($sRequest);
+				$query_update = "UPDATE `fst_request` SET
+						request_status='0'
+					WHERE (request_id='" . $iRequestID . "')
+					AND (user_id_recipient='" . $iUserID . "')";
+				Query ($query_update);
+			}
+		}
 		header ('Location: /notifications/');
 	} else {
 		HTMLStart ('Notifications', 'Notifications', 'Notifications', 0, FALSE);
@@ -187,6 +285,9 @@ if (!isset ($_SESSION['fst']['user_id']))
 		} else {
 			print ('<form action="/notifications/" method="POST">');
 			print ('<input type="submit" value="Clear notifications">');
+
+			/*** REQUESTS ***/
+			Requests ($iUserID);
 
 			/*** MESSAGES ***/
 			Messages ($iUserID);

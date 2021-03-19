@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -210,7 +210,13 @@ $sHTML .= '
 		{
 			if (IsMuted ($iUserID, $row_comment['user_id']) === FALSE)
 				{ $sMuted = 'off'; } else { $sMuted = 'on'; }
-			$sHTML .= Muted ($iCommentID, $sMuted);
+			if (((in_array ($sUser, $GLOBALS['owners']) === FALSE) &&
+				(in_array ($sUser, $GLOBALS['admins']) === FALSE) &&
+				(in_array ($sUser, $GLOBALS['mods']) === FALSE)) ||
+				(IsOwner() === TRUE) ||
+				(IsAdmin() === TRUE) ||
+				(IsMod() === TRUE))
+				{ $sHTML .= Muted ($iCommentID, $sMuted); }
 		}
 
 $sHTML .= '
@@ -225,7 +231,13 @@ $sHTML .= '
 		$sHTML .= Pinned ($iCommentID, $bOwner, $sPinned);
 
 		/*** hidden ***/
-		$sHTML .= Hidden ($iCommentID, $bOwner, $bAuthor);
+		if (((in_array ($sUser, $GLOBALS['owners']) === FALSE) &&
+			(in_array ($sUser, $GLOBALS['admins']) === FALSE) &&
+			(in_array ($sUser, $GLOBALS['mods']) === FALSE)) ||
+			(IsOwner() === TRUE) ||
+			(IsAdmin() === TRUE) ||
+			(IsMod() === TRUE))
+			{ $sHTML .= Hidden ($iCommentID, $bOwner, $bAuthor); }
 
 		/*** approved ***/
 		if (IsText ($sCode) != 3)

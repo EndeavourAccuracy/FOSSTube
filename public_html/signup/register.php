@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -81,7 +81,9 @@ if ((isset ($_POST['username'])) &&
 				($GLOBALS['link'], $sIP) . "',
 			user_regdt='" . $sDTNow . "',
 			user_lastlogindt='" . $sDTNow . "',
-			user_pref_nsfw='" . $GLOBALS['default_pref']['user_pref_nsfw'] . "'";
+			user_pref_nsfw='" . $GLOBALS['default_pref']['user_pref_nsfw'] . "',
+			user_pref_cwidth='" . $GLOBALS['default_pref']['user_pref_cwidth'] . "',
+			user_pref_tsize='" . $GLOBALS['default_pref']['user_pref_tsize'] . "'";
 		$result_insert = Query ($query_insert);
 
 		/*** Session. ***/
@@ -90,6 +92,10 @@ if ((isset ($_POST['username'])) &&
 		$_SESSION['fst']['user_username'] = $sUsername;
 		$_SESSION['fst']['user_pref_nsfw'] =
 			$GLOBALS['default_pref']['user_pref_nsfw'];
+		$_SESSION['fst']['user_pref_cwidth'] =
+			$GLOBALS['default_pref']['user_pref_cwidth'];
+		$_SESSION['fst']['user_pref_tsize'] =
+			$GLOBALS['default_pref']['user_pref_tsize'];
 		$_SESSION['fst']['step_signup'] = 1;
 
 		$arResult['result'] = 1;

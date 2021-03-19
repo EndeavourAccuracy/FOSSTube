@@ -7,8 +7,8 @@
 
 ===[1 - ABOUT]=================================================================
 
-FSTube v1.0 (February 2020)
-Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+FSTube v1.1 (March 2021)
+Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
 
 A free and open-source video sharing content management system.
 
@@ -44,6 +44,7 @@ noUiSlider 14.0.3: MIT
 Respond.js 1.4.2: MIT
 Swift Mailer 4.3.0: LGPL3
 wNumb 1.2.0: MIT
+PHP QR Code 1.1.4: LGPL3
 
 ===[3 - NON-EXHAUSTIVE FEATURE LIST]===========================================
 
@@ -63,7 +64,7 @@ wNumb 1.2.0: MIT
 * Content and comments can be liked (thumbs up).
 * Real-time switching between sizes (360p, 720p, 1080p).
 * User roles (owners, admins, mods) and optional per-user privileges.
-* Per-user monetization options, including a modal dialog.
+* Per-user monetization options (processors, cryptocurrencies), including a modal dialog.
 * Sitewide 4-byte UTF-8 Unicode support (inc. emoji).
 * Search, with autocomplete and hits preview.
 * Extensive content reporting options, a moderation queue, and banning options.
@@ -82,7 +83,7 @@ wNumb 1.2.0: MIT
 * Loop functionality, including customized links.
 * Home page filters: views threshold, (not) safe for work.
 * Extracts and displays video durations and average FPSs; counts views.
-* Publishers can love/pin comments, mute users,
+* Publishers can love/pin comments, mute users.
 * Lots of security measures, such as hashed passwords created on-site, sanitization, tokens, CAPTCHAs, logging of failed login attempts, and verification codes, to protect against CSRF, SQL injection, XSS, and brute-force attacks.
 * User content is sortable by date, views, likes, comments, and durations.
 * Auto-generation of related content.
@@ -95,6 +96,13 @@ wNumb 1.2.0: MIT
 * Sticky (hideable) floatable videos when scrolling down long pages.
 * Forgot username/password functionality.
 * Users can change their email addresses, passwords, and usernames.
+* Video playback speed control.
+* Users can browse their comment history and subscriptions.
+* User preferences: show NSFW content, home container width, thumbnail size.
+* Users can send and receive information requests (email address).
+* Admins can change forum topic titles.
+* Customizable 404 Not Found page.
+* Disallows users from adding duplicate videos to the same account (MD5), and the video overview lists duplicate videos on other accounts (again, MD5).
 
 ===[4 - INSTALLATION AND SET UP]===============================================
 
@@ -128,7 +136,7 @@ The assumption is that FSTube will be installed in the root of your domain. Runn
 You must have a non-public directory (such as private/) on the same level as your website directory (such as public_html/ or www/). Virtually all accounts have this nowadays. If your account does not, (ask your webmaster to) create one.
 
 First, check if any addendums have been issued for this text:
-https://www.fstube.org/addendums/1.0/
+https://www.fstube.org/addendums/1.1/
 
 Add
 character-set-server=utf8mb4
@@ -149,7 +157,7 @@ $ sudo apt install php-gd
 $ sudo service apache2 restart
 
 Modify various PHP settings:
-$ sudo vim /etc/php/7.2/apache2/php.ini
+$ sudo vim /etc/php/7.x/apache2/php.ini
 file_uploads = On
 max_execution_time = 1500
 max_input_time = 60
@@ -164,7 +172,7 @@ $ sudo service apache2 restart
 Modify all "CHANGE" in private/fst_db.php.
 
 Modify all settings in private/fst_settings.php.
-If, for security purposes, you renamed the directory "swift_random", also change it in the above file.
+If, for security purposes, you renamed the directories "swift_random" and "phpqrcode_random", also change it in the above file.
 
 Modify public_html/.htaccess.
 At the very least the two instances of "yourdomain.com".
@@ -177,6 +185,7 @@ Modify HTML text:
 * public_html/about/about.html
 * public_html/terms/terms.html
 * public_html/privacy/privacy.html
+* public_html/404.html
 
 Modify images:
 * All images in the directory public_html/images/favicons/

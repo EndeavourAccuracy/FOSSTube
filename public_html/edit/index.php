@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -149,7 +149,7 @@ Among other things, tags impact related content and search results.
 		print ('<option value="' . $row_cats['category_id'] . '"');
 		if ($iCat == $row_cats['category_id']) { print (' selected'); }
 		print ('>' . $row_cats['category_name'] . '</option>');
-	}
+	}	
 	print ('</select>');
 	print ('</span>');
 

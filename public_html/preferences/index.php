@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,9 @@ function FormPref ()
 /*****************************************************************************/
 {
 	$query_pref = "SELECT
-			user_pref_nsfw
+			user_pref_nsfw,
+			user_pref_cwidth,
+			user_pref_tsize
 		FROM `fst_user`
 		WHERE (user_id='" . $_SESSION['fst']['user_id'] . "')";
 	$result_pref = Query ($query_pref);
@@ -35,9 +37,40 @@ function FormPref ()
 	$iNSFW = intval ($row_pref['user_pref_nsfw']);
 	if ($iNSFW == 1)
 		{ $iCheckedNSFW = ' checked'; } else { $iCheckedNSFW = ''; }
+	$iCWidth = intval ($row_pref['user_pref_cwidth']);
+	$iTSize = intval ($row_pref['user_pref_tsize']);
 
 print ('
 <input type="checkbox" id="nsfw_yn"' . $iCheckedNSFW . '> Show NSFW content.
+');
+
+	/*** cwidth ***/
+	print ('<span style="display:block; margin-top:10px;">');
+	print ('<label for="cwidth" class="lbl">Home container width:</label>');
+	print ('<select id="cwidth">');
+	for ($iLoopCWidth = 0; $iLoopCWidth <= 13; $iLoopCWidth++)
+	{
+		print ('<option value="' . $iLoopCWidth . '"');
+		if ($iCWidth == $iLoopCWidth) { print (' selected'); }
+		print ('>' . CWidth ($iLoopCWidth) . '</option>');
+	}
+	print ('</select>');
+	print ('</span>');
+
+	/*** tsize ***/
+	print ('<span style="display:block; margin-top:10px;">');
+	print ('<label for="tsize" class="lbl">Thumbnail size:</label>');
+	print ('<select id="tsize">');
+	for ($iLoopTSize = 100; $iLoopTSize >= 50; $iLoopTSize-=10)
+	{
+		print ('<option value="' . $iLoopTSize . '"');
+		if ($iTSize == $iLoopTSize) { print (' selected'); }
+		print ('>' . TSize ($iLoopTSize) . '</option>');
+	}
+	print ('</select>');
+	print ('</span>');
+
+print ('
 <div id="preferences-error" style="color:#f00; margin-top:10px;"></div>
 <input type="button" id="preferences-save" value="Save">
 ');
@@ -48,11 +81,15 @@ $("#preferences-save").click(function(){
 	var nsfw_bool = $("#nsfw_yn").is(":checked");
 	if (nsfw_bool == false)
 		{ var nsfw_yn = 0; } else { var nsfw_yn = 1; }
+	var cwidth = $("#cwidth").val();
+	var tsize = $("#tsize").val();
 	$.ajax({
 		type: "POST",
 		url: "/preferences/save.php",
 		data: ({
 			nsfw_yn : nsfw_yn,
+			cwidth : cwidth,
+			tsize : tsize,
 			csrf_token : "' . $_SESSION['fst']['csrf_token'] . '"
 		}),
 		dataType: "json",

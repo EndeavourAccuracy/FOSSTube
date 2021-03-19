@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.0 (February 2020)
- * Copyright (C) 2020 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FSTube v1.1 (March 2021)
+ * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -157,7 +157,23 @@ function Monetization ($iUserID, $sUser)
 			monetization_subscribestar_yn,
 			monetization_subscribestar_url,
 			monetization_bitbacker_yn,
-			monetization_bitbacker_url
+			monetization_bitbacker_url,
+			monetization_crypto1_yn,
+			monetization_crypto1_name,
+			monetization_crypto1_address,
+			monetization_crypto1_qr,
+			monetization_crypto2_yn,
+			monetization_crypto2_name,
+			monetization_crypto2_address,
+			monetization_crypto2_qr,
+			monetization_crypto3_yn,
+			monetization_crypto3_name,
+			monetization_crypto3_address,
+			monetization_crypto3_qr,
+			monetization_crypto4_yn,
+			monetization_crypto4_name,
+			monetization_crypto4_address,
+			monetization_crypto4_qr
 		FROM `fst_monetization`
 		WHERE (user_id='" . $iUserID . "')";
 	$result_mon = Query ($query_mon);
@@ -173,9 +189,28 @@ function Monetization ($iUserID, $sUser)
 		$sSubscribeStar = $row_mon['monetization_subscribestar_url'];
 		$iBitbacker = intval ($row_mon['monetization_bitbacker_yn']);
 		$sBitbacker = $row_mon['monetization_bitbacker_url'];
+		/***/
+		$iCrypto1 = intval ($row_mon['monetization_crypto1_yn']);
+		$sCrypto1N = $row_mon['monetization_crypto1_name'];
+		$sCrypto1A = $row_mon['monetization_crypto1_address'];
+		$iCrypto1QR = intval ($row_mon['monetization_crypto1_qr']);
+		$iCrypto2 = intval ($row_mon['monetization_crypto2_yn']);
+		$sCrypto2N = $row_mon['monetization_crypto2_name'];
+		$sCrypto2A = $row_mon['monetization_crypto2_address'];
+		$iCrypto2QR = intval ($row_mon['monetization_crypto2_qr']);
+		$iCrypto3 = intval ($row_mon['monetization_crypto3_yn']);
+		$sCrypto3N = $row_mon['monetization_crypto3_name'];
+		$sCrypto3A = $row_mon['monetization_crypto3_address'];
+		$iCrypto3QR = intval ($row_mon['monetization_crypto3_qr']);
+		$iCrypto4 = intval ($row_mon['monetization_crypto4_yn']);
+		$sCrypto4N = $row_mon['monetization_crypto4_name'];
+		$sCrypto4A = $row_mon['monetization_crypto4_address'];
+		$iCrypto4QR = intval ($row_mon['monetization_crypto4_qr']);
 
 		if (($iPatreon == 1) || ($iPayPalMe == 1) ||
-			($iSubscribeStar == 1) || ($iBitbacker == 1))
+			($iSubscribeStar == 1) || ($iBitbacker == 1) ||
+			($iCrypto1 == 1) || ($iCrypto2 == 1) ||
+			($iCrypto3 == 1) || ($iCrypto4 == 1))
 		{
 print ('
 <div class="modal fade" id="donate-modal" tabindex="-1" role="dialog">
@@ -186,7 +221,7 @@ print ('
 <h4 class="modal-title">Donate</h4>
 </div>
 <div class="modal-body" style="text-align:center;">
-<span style="display:block; margin-bottom:10px;">Publisher "' . $sUser . '" accepts tips or pledges.<br>To donate, select your preferred processor below.</span>
+<span style="display:block; margin-bottom:10px;">Publisher "' . $sUser . '" accepts tips or pledges.<br>To donate, select your preferred processor or cryptocurrency below.</span>
 ');
 
 			if ($iPatreon == 1)
@@ -204,6 +239,34 @@ print ('
 			if ($iBitbacker == 1)
 			{
 				print ('<a target="_blank" href="https://bitbacker.io/user/' . Sanitize ($sBitbacker) . '" class="processor-img"><img src="/images/mon/Bitbacker.png" alt="Bitbacker"></a>' . "\n");
+			}
+			if ($iCrypto1 == 1)
+			{
+				print ('<span class="crypto-blk">');
+				print ('<span style="font-style:italic;">' . Sanitize ($sCrypto1N) . '</span><br>' . Sanitize ($sCrypto1A));
+				if ($iCrypto1QR == 1) { print ('<br><img src="/qr.php?text=' . Sanitize ($sCrypto1A) . '">'); }
+				print ('</span>');
+			}
+			if ($iCrypto2 == 1)
+			{
+				print ('<span class="crypto-blk">');
+				print ('<span style="font-style:italic;">' . Sanitize ($sCrypto2N) . '</span><br>' . Sanitize ($sCrypto2A));
+				if ($iCrypto2QR == 1) { print ('<br><img src="/qr.php?text=' . Sanitize ($sCrypto2A) . '">'); }
+				print ('</span>');
+			}
+			if ($iCrypto3 == 1)
+			{
+				print ('<span class="crypto-blk">');
+				print ('<span style="font-style:italic;">' . Sanitize ($sCrypto3N) . '</span><br>' . Sanitize ($sCrypto3A));
+				if ($iCrypto3QR == 1) { print ('<br><img src="/qr.php?text=' . Sanitize ($sCrypto3A) . '">'); }
+				print ('</span>');
+			}
+			if ($iCrypto4 == 1)
+			{
+				print ('<span class="crypto-blk">');
+				print ('<span style="font-style:italic;">' . Sanitize ($sCrypto4N) . '</span><br>' . Sanitize ($sCrypto4A));
+				if ($iCrypto4QR == 1) { print ('<br><img src="/qr.php?text=' . Sanitize ($sCrypto4A) . '">'); }
+				print ('</span>');
 			}
 			if ($sInfo != '')
 			{
@@ -230,7 +293,7 @@ print ('
 	}
 }
 /*****************************************************************************/
-function AdminBlock ($iVideoID)
+function AdminBlock ($iVideoID, $sCode, $iIsText, $sTitle)
 /*****************************************************************************/
 {
 	print ('<div class="admin-div" style="text-align:center; margin-bottom:10px;">');
@@ -261,6 +324,47 @@ function AdminBlock ($iVideoID)
 
 			print ('<br>' . $sAddDate . ' - ' . $sUsername);
 		}
+	}
+
+	/*** rename title ***/
+	if ($iIsText == 3) /*** Only for forum topics. ***/
+	{
+print ('
+<span id="title-span">
+<div id="title-error" style="color:#f00;"></div>
+<input type="text" id="title" value="' . Sanitize ($sTitle) . '" maxlength="100" style="margin:0;">
+<input type="button" id="title-rename" value="Rename" style="margin:0;">
+</span>
+
+<script>
+$("#title-rename").click(function(){
+	var title = $("#title").val();
+	$.ajax({
+		type: "POST",
+		url: "/v/rename_title.php",
+		data: ({
+			code : "' . $sCode . '",
+			title : title,
+			csrf_token : "' . $_SESSION['fst']['csrf_token'] . '"
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			if (result == 1)
+			{
+				window.location.replace("/v/' . $sCode . '");
+			} else {
+				$("#title-error").html(error);
+			}
+		},
+		error: function() {
+			$("#title-error").html("Error calling rename_title.php.");
+		}
+	});
+});
+</script>
+');
 	}
 
 	print ('</div>');
@@ -551,7 +655,7 @@ MARKED BY THE PUBLISHER AS ADULT-ONLY CONTENT
 			}
 
 			if (IsAdmin())
-				{ AdminBlock ($iVideoID); }
+				{ AdminBlock ($iVideoID, $sCode, $iIsText, $sTitle); }
 
 			if (IsMod())
 				{ ModBlock ($iVideoID, $sCode, $iIsText, $iActiveBoard, $iNSFW); }
@@ -621,7 +725,7 @@ $("#video-cont-a").click(function(){
 ');
 
 print ('
-<video id="video" poster="' . ThumbURL ($sCode, '720', $iThumb, TRUE) . '" preload="metadata" style="max-width:100%;" data-hidden="no" controls' . $sAuto . '>
+<video id="video" poster="' . ThumbURL ($sCode, '720', $iThumb, TRUE) . '" preload="metadata" onloadstart="this.volume=0.5" style="max-width:100%;" data-hidden="no" controls' . $sAuto . '>
 <source src="' . VideoURL ($sCode, '360') . $sSecondsSrc . '" type="video/mp4">
 ');
 
@@ -681,6 +785,18 @@ print ('
 
 			if ($iIsText == 0)
 			{
+				/*** Speed ***/
+print ('
+<span id="speed"><a href="javascript:;">Speed</a></span> | 
+<script>
+$("#speed").click(function(){
+	if ($("#speed-div").css("display") == "none")
+		{ $("#speed-div").css("display", "block"); }
+			else { $("#speed-div").css("display", "none"); }
+});
+</script>
+');
+
 				/*** Embed and Loop ***/
 print ('
 <span id="embed"><a href="javascript:;">Embed</a></span> | <span id="loop"><a href="javascript:;">Loop</a></span>
@@ -824,6 +940,34 @@ print ('
 
 			$sBaseURL = $GLOBALS['protocol'] . '://www.' .
 				$GLOBALS['domain'] . '/v/' . $sCode;
+
+/*** Speed ***/
+print ('
+<div id="speed-div" style="display:none; text-align:center;">
+<a id="speed-025" href="javascript:;">0.25</a> · 
+<a id="speed-050" href="javascript:;">0.5</a> · 
+<a id="speed-075" href="javascript:;">0.75</a> · 
+<a id="speed-100" href="javascript:;">Normal</a> · 
+<a id="speed-125" href="javascript:;">1.25</a> · 
+<a id="speed-150" href="javascript:;">1.5</a> · 
+<a id="speed-175" href="javascript:;">1.75</a> · 
+<a id="speed-200" href="javascript:;">2</a>
+<script>
+function VideoSpeed (speed) {
+	var video = document.getElementById("video");
+	video.playbackRate=speed;
+}
+$("#speed-025").click(function(){ VideoSpeed (0.25); });
+$("#speed-050").click(function(){ VideoSpeed (0.50); });
+$("#speed-075").click(function(){ VideoSpeed (0.75); });
+$("#speed-100").click(function(){ VideoSpeed (1.00); });
+$("#speed-125").click(function(){ VideoSpeed (1.25); });
+$("#speed-150").click(function(){ VideoSpeed (1.50); });
+$("#speed-175").click(function(){ VideoSpeed (1.75); });
+$("#speed-200").click(function(){ VideoSpeed (2.00); });
+</script>
+</div>
+');
 
 print ('
 <div id="embed-textarea" style="display:none;">
