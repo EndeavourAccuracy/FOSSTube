@@ -1,3 +1,11 @@
+v1.2 (August 8, 2021) - Norbert de Jonge
+--------------------
++ Polls can now be attached to forum topics.
++ Support for spherical videos (with Video.js).
++ Highlighting of unread topics and comments/replies.
++ Separate unmute page.
++ Admins can lock forum topics.
+
 v1.1 (March 19, 2021) - Norbert de Jonge
 --------------------
 + Video playback speed control.

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -100,6 +100,10 @@ CREATE TABLE `fst_video` (
 	`video_textsavedt` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
 	`video_istext` tinyint(1) NOT NULL DEFAULT '0',
 	`board_id` int(11) NOT NULL DEFAULT '0',
+	`video_sph_mpprojection` varchar(100) NOT NULL,
+	`video_sph_stereo3dtype` varchar(100) NOT NULL,
+	`projection_id` int NOT NULL DEFAULT '0',
+	`poll_id` int(11) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`video_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE `fst_comment` (
@@ -384,4 +388,49 @@ CREATE TABLE `fst_request` (
 	`request_adddate` DATETIME NOT NULL,
 	`request_status` tinyint(1) NOT NULL DEFAULT '2',
 	PRIMARY KEY (`request_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `fst_projection` (
+	`projection_id` int(11) NOT NULL AUTO_INCREMENT,
+	`projection_name` varchar(100) NOT NULL,
+	`projection_videojs` varchar(100) NOT NULL,
+	`projection_order` int(11) NOT NULL,
+	PRIMARY KEY (`projection_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+INSERT INTO `fst_projection` VALUES (NULL, '180 monoscopic', '180_MONO', '10');
+INSERT INTO `fst_projection` VALUES (NULL, '180 stereoscopic - side by side', '180_LR', '20');
+INSERT INTO `fst_projection` VALUES (NULL, '180 stereoscopic - top and bottom', '180', '30');
+INSERT INTO `fst_projection` VALUES (NULL, '360 monoscopic', '360', '40');
+INSERT INTO `fst_projection` VALUES (NULL, '360 stereoscopic - side by side', '360_LR', '50');
+INSERT INTO `fst_projection` VALUES (NULL, '360 stereoscopic - top and bottom', '360_TB', '60');
+INSERT INTO `fst_projection` VALUES (NULL, 'Cube monoscopic', 'Cube', '70');
+INSERT INTO `fst_projection` VALUES (NULL, 'Cube stereoscopic - side by side', 'Cube', '80');
+INSERT INTO `fst_projection` VALUES (NULL, 'Cube stereoscopic - top and bottom', 'Cube', '90');
+INSERT INTO `fst_projection` VALUES (NULL, 'EAC monoscopic', 'EAC', '100');
+INSERT INTO `fst_projection` VALUES (NULL, 'EAC stereoscopic - side by side', 'EAC_LR', '110');
+INSERT INTO `fst_projection` VALUES (NULL, 'EAC stereoscopic - top and bottom', 'EAC', '120');
+CREATE TABLE `fst_poll` (
+	`poll_id` int(11) NOT NULL AUTO_INCREMENT,
+	`poll_question` varchar(100) NOT NULL,
+	`poll_options` mediumtext NOT NULL,
+	`poll_nroptions` int(11) NOT NULL,
+	`poll_maxvotesperuser` int(11) NOT NULL,
+	`poll_nrdays` int(11) NOT NULL,
+	`poll_dt` DATETIME NOT NULL,
+	PRIMARY KEY (`poll_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `fst_vote` (
+	`vote_id` int(11) NOT NULL AUTO_INCREMENT,
+	`user_id` int(11) NOT NULL,
+	`poll_id` int(11) NOT NULL,
+	`vote_option` int(11) NOT NULL,
+	`vote_ip` VARCHAR(100) NOT NULL,
+	PRIMARY KEY (`vote_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `fst_commentslastviewed` (
+	`commentslastviewed_id` BIGINT NOT NULL AUTO_INCREMENT,
+	`video_id` int(11) NOT NULL,
+	`user_id` int(11) NOT NULL,
+	`commentslastviewed_dt` datetime NOT NULL,
+	PRIMARY KEY (`commentslastviewed_id`),
+	UNIQUE KEY `video_and_user` (`video_id`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

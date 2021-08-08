@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -293,7 +293,7 @@ print ('
 	}
 }
 /*****************************************************************************/
-function AdminBlock ($iVideoID, $sCode, $iIsText, $sTitle)
+function AdminBlock ($iVideoID, $sCode, $iIsText, $sTitle, $iCommentsAllow)
 /*****************************************************************************/
 {
 	print ('<div class="admin-div" style="text-align:center; margin-bottom:10px;">');
@@ -326,7 +326,7 @@ function AdminBlock ($iVideoID, $sCode, $iIsText, $sTitle)
 		}
 	}
 
-	/*** rename title ***/
+	/*** rename title, lock topic ***/
 	if ($iIsText == 3) /*** Only for forum topics. ***/
 	{
 print ('
@@ -360,6 +360,47 @@ $("#title-rename").click(function(){
 		},
 		error: function() {
 			$("#title-error").html("Error calling rename_title.php.");
+		}
+	});
+});
+</script>
+');
+
+		print ('<select id="locked" style="margin-top:10px;">');
+		print ('<option value="1"');
+		if ($iCommentsAllow == 1) { print (' selected'); }
+		print ('>Open</option>');
+		print ('<option value="0"');
+		if ($iCommentsAllow == 0) { print (' selected'); }
+		print ('>Locked</option>');
+		print ('</select>');
+
+print ('
+<script>
+$("#locked").change(function(){
+	var locked = $("#locked option:selected").val();
+
+	$.ajax({
+		type: "POST",
+		url: "/v/locked.php",
+		data: ({
+			code : "' . $sCode . '",
+			locked : locked,
+			csrf_token : "' . $_SESSION['fst']['csrf_token'] . '"
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			if (result == 1)
+			{
+				window.location.replace("/v/' . $sCode . '");
+			} else {
+				alert(error);
+			}
+		},
+		error: function() {
+			alert("Error calling locked.php.");
 		}
 	});
 });
@@ -511,6 +552,7 @@ if (isset ($_GET['code']))
 			fv.video_license,
 			fc.category_name,
 			fv.video_restricted,
+			fv.video_comments_allow,
 			fl.language_nameeng,
 			fv.video_nsfw,
 			fv.video_subtitles,
@@ -528,7 +570,10 @@ if (isset ($_GET['code']))
 			fv.video_textsavedt,
 			fv.video_istext,
 			fv.board_id,
-			fb.board_name
+			fb.board_name,
+			fv.projection_id,
+			fp.projection_videojs,
+			fv.poll_id
 		FROM `fst_video` fv
 		LEFT JOIN `fst_user` fu
 			ON fv.user_id = fu.user_id
@@ -538,6 +583,8 @@ if (isset ($_GET['code']))
 			ON fv.language_id = fl.language_id
 		LEFT JOIN `fst_board` fb
 			ON fv.board_id = fb.board_id
+		LEFT JOIN `fst_projection` fp
+			ON fv.projection_id = fp.projection_id
 		WHERE (video_id='" . $iVideoID . "')
 		AND ((video_360='1') OR (video_istext='1') OR (video_istext='3'))";
 	$result_video = Query ($query_video);
@@ -587,6 +634,7 @@ if (isset ($_GET['code']))
 			$sCategory = $row_video['category_name'];
 			if ($sCategory == '') { $sCategory = '<i>(not set)</i>'; }
 			$iRestricted = $row_video['video_restricted'];
+			$iCommentsAllow = $row_video['video_comments_allow'];
 			$sLanguage = $row_video['language_nameeng'];
 			$iNSFW = intval ($row_video['video_nsfw']);
 			$sSubtitles = $row_video['video_subtitles'];
@@ -599,19 +647,24 @@ if (isset ($_GET['code']))
 				$sFPS = '<abbr title="average frames per second">FPS</abbr>: ' .
 					$fFPS . ' / ';
 			}
+			$iProjection = intval ($row_video['projection_id']);
+			$sProjection = $row_video['projection_videojs'];
+			if ($iProjection == 0)
+				{ $sQ360 = '360p'; $sQ720 = '720p'; $sQ1080 = '1080p'; }
+					else { $sQ360 = '360s'; $sQ720 = '720s'; $sQ1080 = '1080s'; }
 			$iQ360 = $row_video['video_360'];
-			$sQuality =
-				'Size: <a id="q360" href="javascript:;" class="activep">360p</a>';
+			$sQuality = 'Size: <a id="q360" href="javascript:;" class="activep">' .
+				$sQ360 . '</a>';
 			$iEmbedWidth = intval ($row_video['video_360_width']);
 			if ($iEmbedWidth == 0) { $iEmbedWidth = 640; }
 			$iEmbedHeight = intval ($row_video['video_360_height']);
 			if ($iEmbedHeight == 0) { $iEmbedHeight = 360; }
 			$iQ720 = $row_video['video_720'];
 			if ($iQ720 == 1) { $sQuality .=
-				' <a id="q720" href="javascript:;">720p</a>'; }
+				' <a id="q720" href="javascript:;">' . $sQ720 . '</a>'; }
 			$iQ1080 = $row_video['video_1080'];
 			if ($iQ1080 == 1) { $sQuality .=
-				' <a id="q1080" href="javascript:;">1080p</a>'; }
+				' <a id="q1080" href="javascript:;">' . $sQ1080 . '</a>'; }
 			if (($iQ720 == 2) || ($iQ1080 == 2)) { $sQuality .= ' ' . Processing(); }
 			$iViews = $row_video['video_views'];
 			$sDate = date ('j F Y', strtotime ($row_video['video_adddate']));
@@ -627,6 +680,7 @@ if (isset ($_GET['code']))
 			if (strtotime ($row_video['video_textsavedt']) >
 				strtotime ($row_video['video_adddate'])) { $bModified = TRUE; }
 				else { $bModified = FALSE; }
+			$iPollID = intval ($row_video['poll_id']);
 
 			IncreaseViews ($iVideoID);
 
@@ -649,13 +703,22 @@ MARKED BY THE PUBLISHER AS ADULT-ONLY CONTENT
 			if ($iIsText == '1') { print (' style="font-style:italic;"'); }
 			print ('>' . Sanitize ($sTitle) . '</h1>');
 
+			if ($iProjection != 0)
+			{
+print ('
+<div style="margin:10px 0; font-style:italic; text-align:center;">
+This is a spherical video. Click+drag to pan around.
+</div>
+');
+			}
+
 			if ($iIsText == 3)
 			{
 				LinkBack ('/forum/' . $iActiveBoard, 'Board "' . $sBoardName . '"');
 			}
 
 			if (IsAdmin())
-				{ AdminBlock ($iVideoID, $sCode, $iIsText, $sTitle); }
+				{ AdminBlock ($iVideoID, $sCode, $iIsText, $sTitle, $iCommentsAllow); }
 
 			if (IsMod())
 				{ ModBlock ($iVideoID, $sCode, $iIsText, $iActiveBoard, $iNSFW); }
@@ -725,7 +788,7 @@ $("#video-cont-a").click(function(){
 ');
 
 print ('
-<video id="video" poster="' . ThumbURL ($sCode, '720', $iThumb, TRUE) . '" preload="metadata" onloadstart="this.volume=0.5" style="max-width:100%;" data-hidden="no" controls' . $sAuto . '>
+<video id="video" poster="' . ThumbURL ($sCode, '720', $iThumb, TRUE) . '" preload="metadata" onloadstart="this.volume=0.5" style="max-width:100%;" data-hidden="no" controls' . $sAuto . ' class="video-js">
 <source src="' . VideoURL ($sCode, '360') . $sSecondsSrc . '" type="video/mp4">
 ');
 
@@ -736,6 +799,23 @@ print ('
 print ('Your browser or OS does not support HTML5 MP4 video with H.264.
 </video>
 ');
+
+					if ($iProjection != 0)
+					{
+print ('
+<script src="/videojs/video.min.js"></script>
+<script src="/videojs/videojs-vr.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/videojs/video-js.min.css">
+<link rel="stylesheet" type="text/css" href="/videojs/videojs-vr.css">
+<script>
+var fvideo = videojs("video");
+fvideo.vr({
+	projection: "' . $sProjection . '",
+	responsive: "true"
+});
+</script>
+');
+					}
 
 print ('
 </div>
@@ -820,13 +900,7 @@ $("#loop").click(function(){
 print ('
 <script>
 $("#q360").click(function(){
-	var ttime = $("#video")[0].currentTime;
-	$("#video")[0].src = "' . VideoURL ($sCode, '360') . '";
-	$("#video")[0].currentTime = ttime;
-	$("#video")[0].play();
-	if($("#q360").length > 0) { $("#q360").addClass("activep"); }
-	if($("#q720").length > 0) { $("#q720").removeClass("activep"); }
-	if($("#q1080").length > 0) { $("#q1080").removeClass("activep"); }
+	Size("360", "' . $iProjection . '", "' . VideoURL ($sCode, '360') . '");
 });
 </script>
 ');
@@ -836,13 +910,7 @@ if ($iQ720 == 1)
 print ('
 <script>
 $("#q720").click(function(){
-	var ttime = $("#video")[0].currentTime;
-	$("#video")[0].src = "' . VideoURL ($sCode, '720') . '";
-	$("#video")[0].currentTime = ttime;
-	$("#video")[0].play();
-	if($("#q360").length > 0) { $("#q360").removeClass("activep"); }
-	if($("#q720").length > 0) { $("#q720").addClass("activep"); }
-	if($("#q1080").length > 0) { $("#q1080").removeClass("activep"); }
+	Size("720", "' . $iProjection . '", "' . VideoURL ($sCode, '720') . '");
 });
 </script>
 ');
@@ -853,13 +921,7 @@ if ($iQ1080 == 1)
 print ('
 <script>
 $("#q1080").click(function(){
-	var ttime = $("#video")[0].currentTime;
-	$("#video")[0].src = "' . VideoURL ($sCode, '1080') . '";
-	$("#video")[0].currentTime = ttime;
-	$("#video")[0].play();
-	if($("#q360").length > 0) { $("#q360").removeClass("activep"); }
-	if($("#q720").length > 0) { $("#q720").removeClass("activep"); }
-	if($("#q1080").length > 0) { $("#q1080").addClass("activep"); }
+	Size("1080", "' . $iProjection . '", "' . VideoURL ($sCode, '1080') . '");
 });
 </script>
 ');
@@ -1101,6 +1163,15 @@ print ('
 				print ('<a target="_blank" href="https://www.pinterest.com/pin/create/link/?url=' . $sEncURL . '"><img src="/images/social/pinterest.png" alt="Pinterest" title="Pinterest"></a> ');
 			}
 
+			if (($iIsText == 3) && ($iPollID != 0))
+			{
+print ('
+<div id="poll-div" data-poll="' . $iPollID . '">
+<img src="/images/loading.gif" alt="loading">
+</div>
+');
+			}
+
 print ('
 <div id="comments" data-code="' . $sCode . '">
 <img src="/images/loading.gif" alt="loading">
@@ -1206,6 +1277,15 @@ function LikeComment (comment_id) {
 }
 
 $(document).ready(function() {
+');
+
+			if (($iIsText == 3) && ($iPollID != 0))
+			{
+print ('
+	Poll();
+');
+			}
+print ('
 	Comments (' . $iCommentID . ');
 });
 

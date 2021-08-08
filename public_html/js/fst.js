@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -78,6 +78,32 @@ function BackAccount () {
 		},
 		error: function() {
 			alert ("Error calling step_back.php.");
+		}
+	});
+}
+
+function Poll () {
+	var poll = $("#poll-div").data("poll");
+	$.ajax({
+		type: "POST",
+		url: "/v/poll.php",
+		data: ({
+			poll : poll
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			var html = data["html"];
+			if (result == 1)
+			{
+				$("#poll-div").html(html);
+			} else {
+				$("#poll-error").html(error);
+			}
+		},
+		error: function() {
+			$("#poll-error").html("Error calling poll.php.");
 		}
 	});
 }
@@ -232,12 +258,98 @@ function PadLeft (nr) {
 	if (nr < 10) { nr = "0" + nr; }
 	return (nr);
 }
+
 function SecToTime (sec) {
 	var seconds = Math.floor(sec % 60);
 	var minutes = Math.floor((sec / 60) % 60);
 	var hours = Math.floor((sec / (60 * 60)) % 60);
 
 	return PadLeft(hours) + ":" + PadLeft(minutes) + ":" + PadLeft(seconds);
+}
+
+function Size (size, projection, src) {
+	if (projection == 0)
+	{
+		var fvideo = $("#video")[0];
+		var ttime = fvideo.currentTime;
+		fvideo.src = src;
+		fvideo.currentTime = ttime;
+		fvideo.play();
+	} else {
+		var fvideo = videojs("video");
+		var ttime = fvideo.currentTime();
+		fvideo.src({ src: src });
+		fvideo.currentTime(ttime);
+		fvideo.play();
+	}
+	switch (size) {
+		case "360":
+			if($("#q360").length > 0) { $("#q360").addClass("activep"); }
+			if($("#q720").length > 0) { $("#q720").removeClass("activep"); }
+			if($("#q1080").length > 0) { $("#q1080").removeClass("activep"); }
+			break;
+		case "720":
+			if($("#q360").length > 0) { $("#q360").removeClass("activep"); }
+			if($("#q720").length > 0) { $("#q720").addClass("activep"); }
+			if($("#q1080").length > 0) { $("#q1080").removeClass("activep"); }
+			break;
+		case "1080":
+			if($("#q360").length > 0) { $("#q360").removeClass("activep"); }
+			if($("#q720").length > 0) { $("#q720").removeClass("activep"); }
+			if($("#q1080").length > 0) { $("#q1080").addClass("activep"); }
+			break;
+	}
+}
+
+function Boards () {
+	$.ajax({
+		type: "POST",
+		url: "/forum/boards.php",
+		data: ({
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			var html = data["html"];
+			if (result == 1)
+			{
+				$("#boards").html(html);
+			} else {
+				$("#boards-error").html(error);
+			}
+		},
+		error: function() {
+			$("#boards-error").html("Error calling boards.php.");
+		}
+	});
+}
+
+function Topics (offset) {
+	var board = $("#topics").data("board");
+	$.ajax({
+		type: "POST",
+		url: "/forum/topics.php",
+		data: ({
+			board : board,
+			offset : offset
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			var html = data["html"];
+			if (result == 1)
+			{
+				$("#topics").html(html);
+			} else {
+				$("#topics-error").html(error);
+			}
+		},
+		error: function() {
+			$("#topics-error").html("Error calling topics.php.");
+		}
+	});
 }
 
 $(document).ready(function(){
@@ -320,12 +432,12 @@ $(document).ready(function(){
 					if (theme == "day")
 					{
 						$("#theme").data("theme","day");
-						$("#theme").attr("href","/css/fst_day.css?v=16");
+						$("#theme").attr("href","/css/fst_day.css?v=21");
 						$("#switch-img").attr("alt","night");
 						$("#switch-img").attr("src","/images/theme/night.png");
 					} else {
 						$("#theme").data("theme","night");
-						$("#theme").attr("href","/css/fst_night.css?v=16");
+						$("#theme").attr("href","/css/fst_night.css?v=21");
 						$("#switch-img").attr("alt","day");
 						$("#switch-img").attr("src","/images/theme/day.png");
 					}

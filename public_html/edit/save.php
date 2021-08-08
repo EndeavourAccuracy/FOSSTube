@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -23,17 +23,17 @@
 include_once (dirname (__FILE__) . '/../fst_base.php');
 
 /*****************************************************************************/
-function ValidCat ($iCat)
+function ValidValue ($sTable, $sColumn, $iValue)
 /*****************************************************************************/
 {
-	if ($iCat == 0) { return (TRUE); }
+	if ($iValue == 0) { return (TRUE); }
 
-	$query_cat = "SELECT
-			category_id
-		FROM `fst_category`
-		WHERE (category_id='" . $iCat . "')";
-	$result_cat = Query ($query_cat);
-	if (mysqli_num_rows ($result_cat) == 1)
+	$query_value = "SELECT
+			" . $sColumn . "
+		FROM `" . $sTable . "`
+		WHERE (" . $sColumn . "='" . $iValue . "')";
+	$result_value = Query ($query_value);
+	if (mysqli_num_rows ($result_value) == 1)
 	{
 		return (TRUE);
 	} else {
@@ -57,7 +57,8 @@ if ((isset ($_POST['csrf_token'])) &&
 		(isset ($_POST['show'])) &&
 		(isset ($_POST['language'])) &&
 		(isset ($_POST['nsfw'])) &&
-		(isset ($_POST['subtitles'])))
+		(isset ($_POST['subtitles'])) &&
+		(isset ($_POST['projection'])))
 	{
 		$sCode = $_POST['code'];
 		$iVideoID = CodeToID ($sCode);
@@ -81,6 +82,7 @@ if ((isset ($_POST['csrf_token'])) &&
 			$iLanguageID = intval ($_POST['language']);
 			$iNSFW = intval ($_POST['nsfw']);
 			$sSubtitles = $_POST['subtitles'];
+			$iProjection = intval ($_POST['projection']);
 
 			if ((strlen ($sTitle) >= 1) && (strlen ($sTitle) <= 100))
 			{
@@ -89,14 +91,16 @@ if ((isset ($_POST['csrf_token'])) &&
 					if ((($iThumb >= 1) && ($iThumb <= 6)) &&
 						(strlen ($sTags) <= 100) &&
 						(($iLicense >= 1) && ($iLicense <= 2)) &&
-						(ValidCat ($iCat) === TRUE) &&
+						(ValidValue ('fst_category', 'category_id', $iCat) === TRUE) &&
 						(($iRestricted >= 0) && ($iRestricted <= 1)) &&
 						(($iCommentsAllow >= 0) && ($iCommentsAllow <= 1)) &&
 						(($iCommentsShow >= 1) && ($iCommentsShow <= 2)) &&
 						(($iLanguageID == 0) ||
 						(LanguageName ('eng', $iLanguageID) !== FALSE)) &&
 						(($iNSFW >= 0) && ($iNSFW <= 2)) &&
-						(strlen ($sSubtitles) <= 1000000))
+						(strlen ($sSubtitles) <= 1000000) &&
+						(ValidValue ('fst_projection', 'projection_id',
+							$iProjection) === TRUE))
 					{
 						$sDTNow = date ('Y-m-d H:i:s');
 
@@ -117,6 +121,7 @@ if ((isset ($_POST['csrf_token'])) &&
 							video_nsfw='" . $iNSFW . "',
 							video_subtitles='" . mysqli_real_escape_string
 								($GLOBALS['link'], $sSubtitles) . "',
+							projection_id='" . $iProjection . "',
 							video_adddate=IF(video_istext='2','" . $sDTNow . "',video_adddate),
 							video_istext=IF(video_istext='2','1',video_istext)
 							WHERE (video_id='" . $iVideoID . "')";

@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -24,6 +24,9 @@ include_once (dirname (__FILE__) . '/../fst_base.php');
 
 $iAllowed = AllowedBytes();
 $sAllowed = GetSizeHuman ($iAllowed);
+
+/*** Do NOT move to fst_settings.php, because of shell_exec(). ***/
+$GLOBALS['ffprobe'] = substr (shell_exec ('which ffprobe'), 0, -1);
 
 if ((isset ($_POST['csrf_token'])) &&
 	(TokenCorrect ($_POST['csrf_token'])))
@@ -50,6 +53,34 @@ if ((isset ($_POST['csrf_token'])) &&
 								$sIP = GetIP();
 								$sMD5 = md5_file ($_FILES['file']['tmp_name']);
 								if ($sMD5 === FALSE) { $sMD5 = ''; }
+
+								/*** $sSphMpProjection and $sSphStereo3DType ***/
+								$sSphMpProjection = '';
+								$sSphStereo3DType = '';
+								$sExec = $GLOBALS['ffprobe'] . ' -loglevel 0 -print_format json -show_format -show_streams "' . $_FILES['file']['tmp_name'] . '" 2>&1';
+								$xFormatStreams = shell_exec ($sExec);
+								$arFormatStreams = json_decode ($xFormatStreams, TRUE);
+								foreach ($arFormatStreams['streams'] as $arStream)
+								{
+									if ($arStream['codec_type'] == 'video')
+									{
+										if (isset ($arStream['side_data_list']))
+										{
+											foreach ($arStream['side_data_list'] as $arSideData)
+											{
+												switch ($arSideData['side_data_type'])
+												{
+													case 'Spherical Mapping':
+														$sSphMpProjection = $arSideData['projection'];
+														break;
+													case 'Stereo 3D':
+														$sSphStereo3DType = $arSideData['type'];
+														break;
+												}
+											}
+										}
+									}
+								}
 
 								$query_insert = "INSERT INTO `fst_video` SET
 									user_id='" . $iUserID . "',
@@ -93,7 +124,11 @@ if ((isset ($_POST['csrf_token'])) &&
 									video_text='',
 									video_textsavedt='1970-01-01 00:00:00',
 									video_istext='0',
-									board_id='0'";
+									board_id='0',
+									video_sph_mpprojection='" . $sSphMpProjection . "',
+									video_sph_stereo3dtype='" . $sSphStereo3DType . "',
+									projection_id='0',
+									poll_id='0'";
 								$result_insert = Query ($query_insert);
 								$iVideoID = mysqli_insert_id ($GLOBALS['link']);
 								$sCode = IDToCode ($iVideoID);

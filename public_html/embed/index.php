@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -44,13 +44,17 @@ if (isset ($_GET['code']))
 	$iVideoID = CodeToID ($sCode);
 
 	$query_video = "SELECT
-			video_title,
-			video_thumbnail,
-			video_360,
-			video_720,
-			video_1080,
-			video_deleted
-		FROM `fst_video`
+			fv.video_title,
+			fv.video_thumbnail,
+			fv.video_360,
+			fv.video_720,
+			fv.video_1080,
+			fv.video_deleted,
+			fv.projection_id,
+			fp.projection_videojs
+		FROM `fst_video` fv
+		LEFT JOIN `fst_projection` fp
+			ON fv.projection_id = fp.projection_id
 		WHERE (video_id='" . $iVideoID . "')
 		AND (video_360='1')";
 	$result_video = Query ($query_video);
@@ -75,15 +79,20 @@ if (isset ($_GET['code']))
 		} else {
 			$sTitle = $row_video['video_title'];
 			$iThumb = $row_video['video_thumbnail'];
+			$iProjection = intval ($row_video['projection_id']);
+			$sProjection = $row_video['projection_videojs'];
+			if ($iProjection == 0)
+				{ $sQ360 = '360p'; $sQ720 = '720p'; $sQ1080 = '1080p'; }
+					else { $sQ360 = '360s'; $sQ720 = '720s'; $sQ1080 = '1080s'; }
 			$iQ360 = $row_video['video_360'];
-			$sQuality =
-				'Size: <a id="q360" href="javascript:;" class="activep">360p</a>';
+			$sQuality = 'Size: <a id="q360" href="javascript:;" class="activep">' .
+				$sQ360 . '</a>';
 			$iQ720 = $row_video['video_720'];
 			if ($iQ720 == 1) { $sQuality .=
-				' <a id="q720" href="javascript:;">720p</a>'; }
+				' <a id="q720" href="javascript:;">' . $sQ720 . '</a>'; }
 			$iQ1080 = $row_video['video_1080'];
 			if ($iQ1080 == 1) { $sQuality .=
-				' <a id="q1080" href="javascript:;">1080p</a>'; }
+				' <a id="q1080" href="javascript:;">' . $sQ1080 . '</a>'; }
 			if (($iQ720 == 2) || ($iQ1080 == 2)) { $sQuality .= ' ' . Processing(); }
 
 			IncreaseViews ($iVideoID);
@@ -98,10 +107,30 @@ if (isset ($_GET['code']))
 
 print ('
 <div>
-<video id="video" poster="' . ThumbURL ($sCode, '720', $iThumb, TRUE) . '" preload="metadata" onloadstart="this.volume=0.5" style="max-width:100%;" title="' . Sanitize ($sTitle) . '" controls>
+<video id="video" poster="' . ThumbURL ($sCode, '720', $iThumb, TRUE) . '" preload="metadata" onloadstart="this.volume=0.5" style="max-width:100%;" title="' . Sanitize ($sTitle) . '" controls class="video-js">
 <source src="' . VideoURL ($sCode, '360') . $sSeconds . '" type="video/mp4">
 Your browser or OS does not support HTML5 MP4 video with H.264.
 </video>
+');
+
+			if ($iProjection != 0)
+			{
+print ('
+<script src="/videojs/video.min.js"></script>
+<script src="/videojs/videojs-vr.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/videojs/video-js.min.css">
+<link rel="stylesheet" type="text/css" href="/videojs/videojs-vr.css">
+<script>
+var fvideo = videojs("video");
+fvideo.vr({
+	projection: "' . $sProjection . '",
+	responsive: "true"
+});
+</script>
+');
+			}
+
+print ('
 </div>
 <div style="text-align:center;">
 ');
@@ -112,13 +141,7 @@ Your browser or OS does not support HTML5 MP4 video with H.264.
 print ('
 <script>
 $("#q360").click(function(){
-	var ttime = $("#video")[0].currentTime;
-	$("#video")[0].src = "' . VideoURL ($sCode, '360') . '";
-	$("#video")[0].currentTime = ttime;
-	$("#video")[0].play();
-	if($("#q360").length > 0) { $("#q360").addClass("activep"); }
-	if($("#q720").length > 0) { $("#q720").removeClass("activep"); }
-	if($("#q1080").length > 0) { $("#q1080").removeClass("activep"); }
+	Size("360", "' . $iProjection . '", "' . VideoURL ($sCode, '360') . '");
 });
 </script>
 ');
@@ -128,13 +151,7 @@ if ($iQ720 == 1)
 print ('
 <script>
 $("#q720").click(function(){
-	var ttime = $("#video")[0].currentTime;
-	$("#video")[0].src = "' . VideoURL ($sCode, '720') . '";
-	$("#video")[0].currentTime = ttime;
-	$("#video")[0].play();
-	if($("#q360").length > 0) { $("#q360").removeClass("activep"); }
-	if($("#q720").length > 0) { $("#q720").addClass("activep"); }
-	if($("#q1080").length > 0) { $("#q1080").removeClass("activep"); }
+	Size("720", "' . $iProjection . '", "' . VideoURL ($sCode, '720') . '");
 });
 </script>
 ');
@@ -145,13 +162,7 @@ if ($iQ1080 == 1)
 print ('
 <script>
 $("#q1080").click(function(){
-	var ttime = $("#video")[0].currentTime;
-	$("#video")[0].src = "' . VideoURL ($sCode, '1080') . '";
-	$("#video")[0].currentTime = ttime;
-	$("#video")[0].play();
-	if($("#q360").length > 0) { $("#q360").removeClass("activep"); }
-	if($("#q720").length > 0) { $("#q720").removeClass("activep"); }
-	if($("#q1080").length > 0) { $("#q1080").addClass("activep"); }
+	Size("1080", "' . $iProjection . '", "' . VideoURL ($sCode, '1080') . '");
 });
 </script>
 ');

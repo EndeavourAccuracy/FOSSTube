@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -90,7 +90,11 @@ if ((isset ($_POST['csrf_token'])) &&
 									($GLOBALS['link'], $sText) . "',
 								video_textsavedt='" . $sDTNow . "',
 								video_istext='2',
-								board_id='0'";
+								board_id='0',
+								video_sph_mpprojection='',
+								video_sph_stereo3dtype='',
+								projection_id='0',
+								poll_id='0'";
 							$result_insert = Query ($query_insert);
 							if (mysqli_affected_rows ($GLOBALS['link']) == 1)
 							{

@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -38,7 +38,7 @@ function Thumbnails ($iThumb, $sCode, $iIsText)
 		if ($iLoopJPG == $iThumb)
 		{
 			$iActive = 1;
-			$sBorder = '#00f';
+			$sBorder = '#414dc5';
 		} else {
 			$iActive = 0;
 			$sBorder = '#fff';
@@ -64,7 +64,7 @@ $("[name^=\'thumb\']").click(function(){
 		$(this).css("border-color","#fff");
 	});
 	$(this).data("active","1");
-	$(this).css("border-color","#00f");
+	$(this).css("border-color","#414dc5");
 });
 </script>
 ');
@@ -86,11 +86,24 @@ function EditForm ($row_video, $sCode, $iIsText)
 	$iLanguageID = $row_video['language_id'];
 	$iNSFW = $row_video['video_nsfw'];
 	$sSubtitles = $row_video['video_subtitles'];
+	$iLength = intval ($row_video['length']);
+	$sSphMpProjection = $row_video['video_sph_mpprojection'];
+	$sSphStereo3DType = $row_video['video_sph_stereo3dtype'];
+	$iProjection = intval ($row_video['projection_id']);
 	if ($iIsText == 2)
 		{ $sSaveValue = 'Publish'; }
 			else { $sSaveValue = 'Save changes'; }
 
 	print ('<input type="hidden" id="code" value="' . $sCode . '">');
+
+	if (($iIsText == 2) && ($iLength < 1000))
+	{
+print ('
+<span style="display:block; margin:10px 0; color:#00f;">
+Tip: your text is quite short (' . $iLength . ' characters); perhaps it is more suitable as a <a href="/forum/" style="color:#00f;">Forum</a> topic?
+</span>
+');
+	}
 
 	/*** title ***/
 	print ('<label for="title" class="lbl">Title:</label>');
@@ -236,6 +249,31 @@ Among other things, tags impact related content and search results.
 		print ('<input type="hidden" id="subtitles" value="">');
 	}
 
+	/*** projection ***/
+	if (($sSphMpProjection != '') || ($sSphStereo3DType != ''))
+	{
+		print ('<span style="display:block; margin-top:10px;">');
+		print ('<label for="projection" class="lbl">Spherical projection:</label>');
+		print ('<select id="projection">');
+		print ('<option value="">Select...</option>');
+		$query_pr = "SELECT
+				projection_id,
+				projection_name
+			FROM `fst_projection`
+			ORDER BY projection_order";
+		$result_pr = Query ($query_pr);
+		while ($row_pr = mysqli_fetch_assoc ($result_pr))
+		{
+			print ('<option value="' . $row_pr['projection_id'] . '"');
+			if ($iProjection == $row_pr['projection_id']) { print (' selected'); }
+			print ('>' . $row_pr['projection_name'] . '</option>');
+		}
+		print ('</select>');
+		print ('</span>');
+	} else {
+		print ('<input type="hidden" id="projection" value="0">');
+	}
+
 	print ('<div id="save-error" style="color:#f00; margin-top:10px;"></div>');
 	print ('<input type="button" id="save" value="' . $sSaveValue . '" style="margin-top:10px;">');
 
@@ -269,6 +307,7 @@ $("#save").click(function(){
 	var language = $("#language").val();
 	var nsfw = $("#nsfw").val();
 	var subtitles = $("#subtitles").val();
+	var projection = $("#projection").val();
 
 	$.ajax({
 		type: "POST",
@@ -287,6 +326,7 @@ $("#save").click(function(){
 			language : language,
 			nsfw : nsfw,
 			subtitles : subtitles,
+			projection : projection,
 			csrf_token : "' . $_SESSION['fst']['csrf_token'] . '"
 		}),
 		dataType: "json",
@@ -371,7 +411,11 @@ if (!isset ($_SESSION['fst']['user_id']))
 				video_comments_show,
 				language_id,
 				video_nsfw,
-				video_subtitles
+				video_subtitles,
+				CHAR_LENGTH(video_text) AS length,
+				video_sph_mpprojection,
+				video_sph_stereo3dtype,
+				projection_id
 			FROM `fst_video`
 			WHERE (user_id='" . $_SESSION['fst']['user_id'] . "')
 			AND (video_id='" . $iVideoID . "')";

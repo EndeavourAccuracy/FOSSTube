@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -162,6 +162,24 @@ function ShowComment ($iVideoID, $iCommentsShow, $bOwner, $bMuted,
 	$sHTML = '';
 
 	if ($iParentID == 0) { $sClass = 'comment'; } else { $sClass = 'reply'; }
+
+	if ($iUserID != 0)
+	{
+		$query_lastviewed = "SELECT
+				commentslastviewed_dt
+			FROM `fst_commentslastviewed`
+			WHERE (video_id='" . $iVideoID . "')
+			AND (user_id='" . $iUserID . "')";
+		$result_lastviewed = Query ($query_lastviewed);
+		if (mysqli_num_rows ($result_lastviewed) == 1)
+		{
+			$row_lastviewed = mysqli_fetch_assoc ($result_lastviewed);
+
+			if (strtotime ($row_lastviewed['commentslastviewed_dt']) <
+				strtotime ($row_comment['comment_adddate']))
+				{ $sClass .= ' new border'; }
+		}
+	}
 
 	$sUser = $row_comment['user_username'];
 	$sDate = date ('j F Y', strtotime ($row_comment['comment_adddate']));
@@ -336,6 +354,22 @@ function ShowComments ($iVideoID, $iCommentsShow, $bOwner, $bMuted,
 	return ($sReturn);
 }
 /*****************************************************************************/
+function UpdateLastViewed ($iVideoID, $iUserID)
+/*****************************************************************************/
+{
+	if ($iUserID != 0)
+	{
+		$sDTNow = date ('Y-m-d H:i:s');
+		$query_lastviewed = "INSERT INTO `fst_commentslastviewed` SET
+				video_id='" . $iVideoID . "',
+				user_id='" . $iUserID . "',
+				commentslastviewed_dt='" . $sDTNow . "'
+			ON DUPLICATE KEY UPDATE
+				commentslastviewed_dt='" . $sDTNow . "'";
+		Query ($query_lastviewed);
+	}
+}
+/*****************************************************************************/
 
 if ((isset ($_POST['code'])) &&
 	(isset ($_POST['comment'])))
@@ -347,7 +381,8 @@ if ((isset ($_POST['code'])) &&
 	$query_video = "SELECT
 			user_id,
 			video_comments_allow,
-			video_comments_show
+			video_comments_show,
+			video_istext
 		FROM `fst_video`
 		WHERE (video_id='" . $iVideoID . "')";
 	$result_video = Query ($query_video);
@@ -358,18 +393,32 @@ if ((isset ($_POST['code'])) &&
 			{ $iUserID = $_SESSION['fst']['user_id']; } else { $iUserID = 0; }
 		if ($iUserID == $row_video['user_id'])
 			{ $bOwner = TRUE; } else { $bOwner = FALSE; }
-		$iCommentsAllow = $row_video['video_comments_allow'];
-		$iCommentsShow = $row_video['video_comments_show'];
+		$iCommentsAllow = intval ($row_video['video_comments_allow']);
+		$iCommentsShow = intval ($row_video['video_comments_show']);
+		$iIsText = intval ($row_video['video_istext']);
 
 		if ($iCommentsAllow == 0)
 		{
-			$arResult['result'] = 1;
-			$arResult['error'] = '';
-$arResult['html'] = '
+			if ($iIsText != 3)
+			{
+$sHTML = '
 <span style="display:block; margin:30px 0; font-style:italic;">
 Publisher disabled comments for this content.
 </span>
 ';
+			} else {
+$sHTML = '
+<span style="display:block; margin:30px 0; font-style:italic;">
+A moderator has locked this topic.
+</span>
+';
+				$sHTML .= ShowComments ($iVideoID, $iCommentsShow, $bOwner, TRUE,
+					$iUserID, $sCode, $iHighlightID, 0);
+				UpdateLastViewed ($iVideoID, $iUserID);
+			}
+			$arResult['result'] = 1;
+			$arResult['error'] = '';
+			$arResult['html'] = $sHTML;
 		} else {
 			$sHTML = '';
 			$bMuted = FALSE;
@@ -467,6 +516,7 @@ Moderator accounts can not add comments.
 
 			$sHTML .= ShowComments ($iVideoID, $iCommentsShow, $bOwner, $bMuted,
 				$iUserID, $sCode, $iHighlightID, 0);
+			UpdateLastViewed ($iVideoID, $iUserID);
 
 			$arResult['result'] = 1;
 			$arResult['error'] = '';

@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -102,7 +102,15 @@ print ('
 <nav class="navbar navbar-default">
 <div class="container-fluid div-navbar">
 <div class="navbar-header">
-<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar"');
+
+	$iNrNotifications = NrNotifications();
+	if ($iNrNotifications != 0)
+	{
+		print (' style="background-color:#008000;"');
+	}
+
+print ('>
 <span class="sr-only">Toggle navigation</span>
 <span class="icon-bar"></span>
 <span class="icon-bar"></span>
@@ -154,7 +162,6 @@ if (isset ($_SESSION['fst']['user_id']))
 	print ('</ul></li>' . "\n");
 }
 
-$iNrNotifications = NrNotifications();
 if ($iNrNotifications != 0)
 {
 	print ('<li><a href="/notifications/" style="background-color:#008000; color:#fff!important;">' . strval ($iNrNotifications) . '</a></li>' . "\n");
@@ -286,7 +293,7 @@ print ('<meta property="video:duration" content="' . $iOGSecs . '">
 ');
 		}
 print ('<meta property="og:site_name" content="' . $GLOBALS['name'] . '">
-<meta name="twitter:site" content="@fstube">
+<meta name="twitter:site" content="' . $GLOBALS['twitter_account'] . '">
 <meta property="og:title" content="' . $sOGTitle . '">
 <meta name="twitter:title" content="' . $sOGTitle . '">
 <meta property="og:description" content="' . $sOGDescr . '">
@@ -345,21 +352,21 @@ print ('
 <![endif]-->
 <script src="/js/wNumb.min.js"></script>
 <script src="/js/nouislider.min.js"></script>
-<script src="/js/fst.js?v=32"></script>
+<script src="/js/fst.js?v=39"></script>
 
 <!-- CSS -->
 <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="/css/nouislider.min.css">
-<link rel="stylesheet" type="text/css" href="/css/fst.css?v=39">
+<link rel="stylesheet" type="text/css" href="/css/fst.css?v=44">
 ');
 
 if (!isset ($_SESSION['fst']['theme']))
 	{ $_SESSION['fst']['theme'] = $GLOBALS['default_theme']; }
 if ($_SESSION['fst']['theme'] == 'day')
 {
-	print ('<link rel="stylesheet" type="text/css" href="/css/fst_day.css?v=16" id="theme" data-theme="day">' . "\n");
+	print ('<link rel="stylesheet" type="text/css" href="/css/fst_day.css?v=21" id="theme" data-theme="day">' . "\n");
 } else {
-	print ('<link rel="stylesheet" type="text/css" href="/css/fst_night.css?v=16" id="theme" data-theme="night">' . "\n");
+	print ('<link rel="stylesheet" type="text/css" href="/css/fst_night.css?v=21" id="theme" data-theme="night">' . "\n");
 }
 
 print ('
@@ -1109,6 +1116,7 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 			video_views,
 			video_adddate,
 			video_istext,
+			projection_id,
 			(SELECT COUNT(*) FROM `fst_likevideo` WHERE (video_id = fv.video_id)) AS likes,
 			(SELECT COUNT(*) FROM `fst_comment` WHERE (video_id = fv.video_id) AND (comment_hidden='0') AND (fv.video_comments_allow='1') AND ((fv.video_comments_show='1') OR ((fv.video_comments_show='2') AND (comment_approved='1')))) AS comments,
 			fu.user_username
@@ -1152,6 +1160,8 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 					else { $sPreview = ''; }
 			if (($row_videos['video_720'] == 1) || ($row_videos['video_1080'] == 1))
 				{ $bHD = TRUE; } else { $bHD = FALSE; }
+			if ($row_videos['projection_id'] != 0)
+				{ $bSph = TRUE; } else { $bSph = FALSE; }
 			$iViews = $row_videos['video_views'];
 
 			$sHTML .= '<div class="video';
@@ -1182,10 +1192,17 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 				$sHTML .= Processing();
 				$sHTML .= '</span>';
 			}
-			if ($bHD === TRUE)
+			if (($bHD === TRUE) || ($bSph === TRUE))
 			{
 				$sHTML .= '<span class="hd-span">';
-				$sHTML .= '<img src="/images/HD.png" alt="HD" style="height:15px;">';
+				if ($bSph === FALSE)
+				{
+					$sHTML .= '<img src="/images/HD.png" alt="HD"' .
+						' style="height:15px;">';
+				} else {
+					$sHTML .= '<img src="/images/Sph.png" alt="Sph"' .
+						' style="height:15px;">';
+				}
 				$sHTML .= '</span>';
 			}
 			if ($row_videos['video_seconds'] != 0)
@@ -1266,7 +1283,7 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 				$sHTML .= $row_videos['user_username'];
 				$sHTML .= '</div>';
 				$sHTML .= '</a>';
-				$sHTML .= '<div class="views">' . $iViews . ' view';
+				$sHTML .= '<div class="views">' . number_format ($iViews) . ' view';
 				if ($iViews != 1) { $sHTML .= 's'; }
 				$sHTML .= '</div>';
 				$sHTML .= '</div>';
@@ -2085,7 +2102,7 @@ function BBCodeToHTML ($sText)
 
 	/*** indent ***/
 	$sReturn = preg_replace ('~\[indent=([0-9]+)\]~',
-		'<span style="display:block; padding-left:$1px;">', $sReturn);
+		'<span style="display:inline-block; padding-left:$1px;">', $sReturn);
 	$sReturn = str_replace ('[/indent]', '</span>', $sReturn);
 
 	/*** color ***/
@@ -2340,6 +2357,273 @@ function GetRequestedInfo ($iUserID, $iType)
 	}
 
 	return ($sInformation);
+}
+/*****************************************************************************/
+function ForumDate ($sDateTime)
+/*****************************************************************************/
+{
+	if (($sDateTime == '1970-01-01 00:00:00') || ($sDateTime == NULL))
+		{ return ('-'); }
+
+	$sDate = date ('d M y', strtotime ($sDateTime));
+	$sTime = date ('H:i', strtotime ($sDateTime));
+
+	return ($sDate . ' <span style="font-size:12px;">(' . $sTime . ')</span>');
+}
+/*****************************************************************************/
+function PollOpen ($iPollID)
+/*****************************************************************************/
+{
+	/* Returns one of:
+	 * -1 (nonexistent)
+	 * TRUE (forever open)
+	 * FALSE (closed)
+	 * The datetime when it will close.
+	 */
+
+	$query_poll = "SELECT
+			poll_nrdays,
+			poll_dt
+		FROM `fst_poll`
+		WHERE (poll_id='" . $iPollID . "')";
+	$result_poll = Query ($query_poll);
+	if (mysqli_num_rows ($result_poll) == 1)
+	{
+		$row_poll = mysqli_fetch_assoc ($result_poll);
+		$iNrDays = intval ($row_poll['poll_nrdays']);
+		$sStartDT = $row_poll['poll_dt'];
+		$sEndDT = date ('Y-m-d H:i:s', strtotime ($sStartDT .
+			' +' . $iNrDays . ' day'));
+		$sNowDT = date ('Y-m-d H:i:s');
+
+		if ($iNrDays == 0)
+		{
+			$sOpen = TRUE;
+		} else {
+			if ($sNowDT < $sEndDT)
+			{
+				$sOpen = $sEndDT;
+			} else {
+				$sOpen = FALSE;
+			}
+		}
+	} else { $sOpen = -1; }
+
+	return ($sOpen);
+}
+/*****************************************************************************/
+function PollVoted ($iPollID, $iUserID, $sIP)
+/*****************************************************************************/
+{
+	/*** Returns 0 (not voted), 1 (user voted), or 2 (IP voted). ***/
+
+	/*** user voted ***/
+	$query_voted = "SELECT
+			vote_id
+		FROM `fst_vote`
+		WHERE (poll_id='" . $iPollID . "')
+		AND (user_id='" . $iUserID . "')";
+	$result_voted = Query ($query_voted);
+	if (mysqli_num_rows ($result_voted) != 0) { return (1); }
+
+	/*** IP voted ***/
+	$query_voted = "SELECT
+			vote_id
+		FROM `fst_vote`
+		WHERE (poll_id='" . $iPollID . "')
+		AND (vote_ip='" . $sIP . "')";
+	$result_voted = Query ($query_voted);
+	if (mysqli_num_rows ($result_voted) != 0) { return (2); }
+
+	/*** not voted ***/
+	return (0);
+}
+/*****************************************************************************/
+function NewestFirst ($arTopic1, $arTopic2)
+/*****************************************************************************/
+{
+	return (strtotime ($arTopic2['lastupdate_date']) -
+		strtotime ($arTopic1['lastupdate_date']));
+}
+/*****************************************************************************/
+function Topics ($iBoard, $iUserID, $iJustNewContent)
+/*****************************************************************************/
+{
+	/*** Returns FALSE if the board has no topics. ***/
+
+	$query_topics = "SELECT
+			fv.video_id,
+			fv.video_title,
+			fu.user_username AS created_username,
+			fv.video_adddate AS created_date,
+			fv.video_views,
+			fv.video_comments_allow
+		FROM `fst_video` fv
+		LEFT JOIN `fst_user` fu
+			ON fv.user_id = fu.user_id
+		WHERE (video_istext='3')
+		AND (board_id='" . $iBoard . "')
+		AND (video_deleted='0')";
+	$result_topics = Query ($query_topics);
+	if (mysqli_num_rows ($result_topics) != 0)
+	{
+		$iTopic = 0;
+		while ($row_topics = mysqli_fetch_assoc ($result_topics))
+		{
+			$arTopics[$iTopic] = array();
+
+			$arTopics[$iTopic]['video_id'] = intval ($row_topics['video_id']);
+			$arTopics[$iTopic]['code'] = IDToCode ($arTopics[$iTopic]['video_id']);
+			$arTopics[$iTopic]['video_title'] = $row_topics['video_title'];
+			/***/
+			$arTopics[$iTopic]['created_username'] = $row_topics['created_username'];
+			$arTopics[$iTopic]['created_date'] = $row_topics['created_date'];
+			/***/
+			$arTopics[$iTopic]['video_views'] = intval ($row_topics['video_views']);
+			$arTopics[$iTopic]['video_comments_allow'] =
+				intval ($row_topics['video_comments_allow']);
+
+			$iTopic++;
+		}
+
+		/*** $arReplies ***/
+		if ($iJustNewContent == 0)
+		{
+			$arReplies = array();
+			$query_replies = "SELECT
+					fc.video_id,
+					COUNT(*) AS nr_replies
+				FROM `fst_comment` fc
+				LEFT JOIN `fst_video` fv
+					ON fc.video_id=fv.video_id
+				WHERE (fv.board_id='" . $iBoard . "')
+				AND (fv.video_deleted='0')
+				AND (fc.comment_hidden='0')
+				GROUP BY video_id";
+			$result_replies = Query ($query_replies);
+			if (mysqli_num_rows ($result_replies) != 0)
+			{
+				while ($row_replies = mysqli_fetch_assoc ($result_replies))
+				{
+					$iVideoID = intval ($row_replies['video_id']);
+					$iNrReplies = intval ($row_replies['nr_replies']);
+					$arReplies[$iVideoID] = $iNrReplies;
+				}
+			}
+		}
+
+		/*** $arLastReplyUsername and $arLastReplyDate ***/
+		$arLastReplyUsername = array();
+		$arLastReplyDate = array();
+		$query_last = "SELECT
+				fc.video_id,
+				fu.user_username AS lastreply_username,
+				fc.comment_adddate AS lastreply_date
+			FROM `fst_comment` fc
+			LEFT JOIN `fst_video` fv
+				ON fc.video_id=fv.video_id
+			LEFT JOIN `fst_user` fu
+				ON fc.user_id=fu.user_id
+			WHERE (fc.comment_id IN (
+				SELECT
+					MAX(fc.comment_id)
+				FROM `fst_comment` fc
+				LEFT JOIN `fst_video` fv
+					ON fc.video_id=fv.video_id
+				LEFT JOIN `fst_user` fu
+					ON fc.user_id=fu.user_id
+				WHERE (fv.board_id='" . $iBoard . "')
+				AND (fv.video_deleted='0')
+				AND (fc.comment_hidden='0')
+				GROUP BY fv.video_id))";
+		$result_last = Query ($query_last);
+		if (mysqli_num_rows ($result_last) != 0)
+		{
+			while ($row_last = mysqli_fetch_assoc ($result_last))
+			{
+				$iVideoID = intval ($row_last['video_id']);
+				/***/
+				$sLastReplyUsername = $row_last['lastreply_username'];
+				$arLastReplyUsername[$iVideoID] = $sLastReplyUsername;
+				/***/
+				$sLastReplyDate = $row_last['lastreply_date'];
+				$arLastReplyDate[$iVideoID] = $sLastReplyDate;
+			}
+		}
+
+		/*** $arLastViewed ***/
+		if ($iUserID != 0)
+		{
+			$arLastViewed = array();
+			$query_lastviewed = "SELECT
+					video_id,
+					commentslastviewed_dt
+				FROM `fst_commentslastviewed`
+				WHERE (user_id='" . $iUserID . "')";
+			$result_lastviewed = Query ($query_lastviewed);
+			if (mysqli_num_rows ($result_lastviewed) != 0)
+			{
+				while ($row_lastviewed = mysqli_fetch_assoc ($result_lastviewed))
+				{
+					$iVideoID = intval ($row_lastviewed['video_id']);
+					$sLastViewedDT = $row_lastviewed['commentslastviewed_dt'];
+					/***/
+					$arLastViewed[$iVideoID] = $sLastViewedDT;
+				}
+			}
+		} else { $arLastViewed = FALSE; }
+
+		foreach ($arTopics as $iKey => $arTopic)
+		{
+			/*** nr_replies ***/
+			if (isset ($arReplies[$arTopic['video_id']]))
+			{
+				$arTopics[$iKey]['nr_replies'] = $arReplies[$arTopic['video_id']];
+			} else {
+				$arTopics[$iKey]['nr_replies'] = 0;
+			}
+
+			/*** last_reply and lastupdate_date ***/
+			if ((isset ($arLastReplyUsername[$arTopic['video_id']])) &&
+				(isset ($arLastReplyDate[$arTopic['video_id']])))
+			{
+				$arTopics[$iKey]['lastreply_username'] =
+					$arLastReplyUsername[$arTopic['video_id']];
+				$arTopics[$iKey]['lastreply_date'] =
+					$arLastReplyDate[$arTopic['video_id']];
+				$arTopics[$iKey]['last_reply'] =
+					ForumDate ($arTopics[$iKey]['lastreply_date']) .
+					' by <a href="/user/' .
+					$arTopics[$iKey]['lastreply_username'] . '">' .
+					$arTopics[$iKey]['lastreply_username'] . '</a>';
+				/***/
+				$arTopics[$iKey]['lastupdate_date'] =
+					$arTopics[$iKey]['lastreply_date'];
+			} else {
+				$arTopics[$iKey]['last_reply'] = '-';
+				/***/
+				$arTopics[$iKey]['lastupdate_date'] =
+					$arTopics[$iKey]['created_date'];
+			}
+
+			/*** new_content ***/
+			if (($arLastViewed !== FALSE) &&
+				((!isset ($arLastViewed[$arTopic['video_id']])) ||
+				(strtotime ($arLastViewed[$arTopic['video_id']]) <
+				strtotime ($arTopics[$iKey]['lastupdate_date']))))
+			{
+				$arTopics[$iKey]['new_content'] = TRUE;
+			} else {
+				$arTopics[$iKey]['new_content'] = FALSE;
+			}
+		}
+
+		usort ($arTopics, 'NewestFirst');
+	} else {
+		$arTopics = FALSE;
+	}
+
+	return ($arTopics);
 }
 /*****************************************************************************/
 

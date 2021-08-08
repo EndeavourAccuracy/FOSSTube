@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -249,7 +249,7 @@ function StatsSettings ()
 	$result_users = Query ($query_users);
 	$row_users = mysqli_fetch_assoc ($result_users);
 	$iAmount = $row_users['amount'];
-	$sUsers = '<span style="display:block;">Active users: ' .
+	$sUsers = '<span style="display:block;">Active accounts: ' .
 		number_format ($iAmount) . '</span>';
 	print ($sUsers);
 

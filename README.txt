@@ -7,7 +7,7 @@
 
 ===[1 - ABOUT]=================================================================
 
-FSTube v1.1 (March 2021)
+FSTube v1.2 (August 2021)
 Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
 
 A free and open-source video sharing content management system.
@@ -45,6 +45,7 @@ Respond.js 1.4.2: MIT
 Swift Mailer 4.3.0: LGPL3
 wNumb 1.2.0: MIT
 PHP QR Code 1.1.4: LGPL3
+[Used only for spherical videos:] Video.js (VR) 7.13.3 (1.8.0): Apache 2.0
 
 ===[3 - NON-EXHAUSTIVE FEATURE LIST]===========================================
 
@@ -83,7 +84,7 @@ PHP QR Code 1.1.4: LGPL3
 * Loop functionality, including customized links.
 * Home page filters: views threshold, (not) safe for work.
 * Extracts and displays video durations and average FPSs; counts views.
-* Publishers can love/pin comments, mute users.
+* Publishers can love/pin comments, (un)mute users.
 * Lots of security measures, such as hashed passwords created on-site, sanitization, tokens, CAPTCHAs, logging of failed login attempts, and verification codes, to protect against CSRF, SQL injection, XSS, and brute-force attacks.
 * User content is sortable by date, views, likes, comments, and durations.
 * Auto-generation of related content.
@@ -100,9 +101,12 @@ PHP QR Code 1.1.4: LGPL3
 * Users can browse their comment history and subscriptions.
 * User preferences: show NSFW content, home container width, thumbnail size.
 * Users can send and receive information requests (email address).
-* Admins can change forum topic titles.
+* Admins can change forum topic titles, and lock forum topics.
 * Customizable 404 Not Found page.
 * Disallows users from adding duplicate videos to the same account (MD5), and the video overview lists duplicate videos on other accounts (again, MD5).
+* Polls can be attached to forum topics.
+* Support for spherical videos (with Video.js).
+* Highlighting of unread topics and comments/replies.
 
 ===[4 - INSTALLATION AND SET UP]===============================================
 
@@ -136,7 +140,7 @@ The assumption is that FSTube will be installed in the root of your domain. Runn
 You must have a non-public directory (such as private/) on the same level as your website directory (such as public_html/ or www/). Virtually all accounts have this nowadays. If your account does not, (ask your webmaster to) create one.
 
 First, check if any addendums have been issued for this text:
-https://www.fstube.org/addendums/1.1/
+https://www.fstube.org/addendums/1.2/
 
 Add
 character-set-server=utf8mb4
@@ -185,6 +189,7 @@ Modify HTML text:
 * public_html/about/about.html
 * public_html/terms/terms.html
 * public_html/privacy/privacy.html
+* public_html/mod/guidelines.html
 * public_html/404.html
 
 Modify images:

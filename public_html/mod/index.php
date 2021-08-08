@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -26,29 +26,10 @@ include_once (dirname (__FILE__) . '/../fst_base.php');
 function ShowInfo ()
 /*****************************************************************************/
 {
-print ('
-<div class="div-report" style="text-align:center;">
-<h2>Guidelines</h2>
-<p style="line-height:25px;">
-Banning is a last resort only.
-<br>
-If a video or avatar is HEAVILY unlawful (e.g. child pornography), BAN the USER.
-<br>
-If a reporter BOTH SEVERELY and DELIBERATELY misuses the report functionality, BAN the REPORTER.
-<br>
-If a video or avatar contains graphic violence or sexually explicit content, WARN the USER.
-<br>
-If a comment is CLEARLY unlawful (e.g. severe threat), WARN the USER.
-<br>
-If a user has had MANY warnings, in particular about their videos, it may be time to BAN the USER.
-</p>
-<p style="margin-bottom:0;">
-Thank you for helping with moderation!
-<br>
-Questions? Feel free to contact: <a href="mailto:info@sfstube.nl">info@sfstube.nl</a>
-</p>
-</div>
-');
+	print ('<div class="div-report" style="text-align:center;">');
+	print ('<h2>Guidelines</h2>' . "\n");
+	include_once (dirname (__FILE__) . '/guidelines.html');
+	print ('</div>');
 }
 /*****************************************************************************/
 function ContentName ($iIsText)

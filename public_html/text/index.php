@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -284,7 +284,7 @@ print ('
 <p>
 When publishing a saved text, you can add one thumbnail/header image.
 <br>
-Other images and external links and <span style="font-style:italic;">not</span> supported.
+Other images and external links are <span style="font-style:italic;">not</span> supported.
 <br>
 Alternatives are respectively showing a link to an external image, and showing the link to the reader.
 <br>

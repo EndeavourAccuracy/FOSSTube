@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -92,6 +92,19 @@ Videos currently up for <a href="/adopt/">adoption</a>: ' . $iAmount . '
 ');
 }
 /*****************************************************************************/
+function Q4 ()
+/*****************************************************************************/
+{
+print ('
+<h2 id="Q4" class="question" style="margin-top:30px;">
+How to add spherical (e.g. 360-degree) videos?
+</h2>
+<span>
+First, add spherical metadata to your video, for instance with Google\'s <a target="_blank" href="https://github.com/google/spatial-media/tree/master/spatialmedia">Spatial Media Metadata Injector</a>. Then, upload the video. Finally, edit your video to select the correct "spherical projection" from the drop-down list.
+</span>
+');
+}
+/*****************************************************************************/
 
 HTMLStart ('FAQ', 'About', 'FAQ', 0, FALSE);
 print ('<h1>FAQ</h1>');
@@ -103,6 +116,7 @@ if (!isset ($_SESSION['fst']['user_id']))
 	Q1();
 	Q2();
 	Q3();
+	Q4();
 }
 HTMLEnd();
 ?>

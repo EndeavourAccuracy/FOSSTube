@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.1 (March 2021)
+/* FSTube v1.2 (August 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -57,6 +57,7 @@ $GLOBALS['mail_from'] = 'SMTP email address';
 $GLOBALS['mail_pass'] = 'SMTP password';
 $GLOBALS['mail_admins'] = array ('info@yourdomain.com');
 $GLOBALS['max_faillogin_hour'] = 10;
+$GLOBALS['twitter_account'] = '@yourtwitter';
 
 /* If you modify this, also modify post_max_size and
  * upload_max_filesize in Apache's php.ini.
@@ -72,7 +73,7 @@ $GLOBALS['admins'] = array ('user2');
 $GLOBALS['mods'] = array ('user3', 'user4');
 
 $GLOBALS['disallowed_usernames'] = array ('yourdomain', 'admin', 'webmaster', 'postmaster', 'root', 'administrator', 'sysadmin', 'moderator', 'webadmin');
-$GLOBALS['disallowed_email_ends'] = array ('.onion', 'yandex.com');
+$GLOBALS['disallowed_email_ends'] = array ('.onion', 'yandex.com', 'yandex.ru');
 $GLOBALS['items_per_page'] = 24;
 /***
 $sGrep = 'grep -c processor /proc/cpuinfo';
