@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -45,6 +45,11 @@ if ((isset ($_POST['csrf_token'])) &&
 		{
 			$sHash = password_hash ($sPassword, PASSWORD_DEFAULT);
 			$iUserID = GetUserID ($_SESSION['fst']['user_usernametmp']);
+			if ($iUserID === FALSE)
+			{
+				print ('Unknown username.');
+				exit();
+			}
 
 			$query_update = "UPDATE `fst_user` SET
 					user_hash='" . $sHash . "'

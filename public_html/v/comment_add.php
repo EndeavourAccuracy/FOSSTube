@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -67,6 +67,9 @@ if ((isset ($_POST['csrf_token'])) &&
 				if ($iNotifyParent == $iUserID)
 					{ $iNotifyParent = 0; }
 
+				if (FewerNotif ($iUserID, $iNotifyParent) === TRUE)
+					{ $iNotifyParent = 0; }
+
 				if (IsMuted ($iNotifyPublisher, $iUserID) === FALSE)
 				{
 					if ((strlen ($sText) >= 1) && (strlen ($sText) <= 4000))
@@ -90,6 +93,8 @@ if ((isset ($_POST['csrf_token'])) &&
 						$result_add = Query ($query_add);
 						if (mysqli_affected_rows ($GLOBALS['link']) == 1)
 						{
+							UpdateCountComments ($iVideoID);
+
 							$arResult['result'] = 1;
 							$arResult['error'] = '';
 						} else {

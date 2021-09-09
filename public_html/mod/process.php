@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -66,6 +66,14 @@ function HideVideoOrComment ($row_report, $bWarning)
 				comment_hidden='1'
 			WHERE (comment_id='" . $row_report['comment_id'] . "')";
 		Query ($query_update);
+		/***/
+		$query_update = "SELECT
+				video_id
+			FROM `fst_comment`
+			WHERE (comment_id='" . $row_report['comment_id'] . "')";
+		$result_update = Query ($query_update);
+		$row_update = mysqli_fetch_assoc ($result_update);
+		UpdateCountComments ($row_update['video_id']);
 
 		if ($bWarning === TRUE)
 		{
@@ -126,6 +134,14 @@ function BanUser ($iUserID)
 			comment_hidden='1'
 		WHERE (user_id='" . $iUserID . "')";
 	Query ($query_comments);
+	/***/
+	$query_update = "SELECT
+			DISTINCT(video_id)
+		FROM `fst_comment`
+		WHERE (user_id='" . $iUserID . "')";
+	$result_update = Query ($query_update);
+	while ($row_update = mysqli_fetch_assoc ($result_update))
+		{ UpdateCountComments ($row_update['video_id']); }
 
 	/*** IP ***/
 	$sIP = GetUserInfo ($iUserID, 'user_regip');

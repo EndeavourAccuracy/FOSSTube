@@ -1,3 +1,8 @@
+v1.3 (September 9, 2021) - Norbert de Jonge
+--------------------
++ Advanced search page.
++ Additional user preference: fewer notifications about certain users.
+
 v1.2 (August 8, 2021) - Norbert de Jonge
 --------------------
 + Polls can now be attached to forum topics.

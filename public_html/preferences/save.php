@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -25,45 +25,80 @@ include_once (dirname (__FILE__) . '/../fst_base.php');
 if ((isset ($_POST['csrf_token'])) &&
 	(TokenCorrect ($_POST['csrf_token'])))
 {
-	if ((isset ($_POST['nsfw_yn'])) &&
-		(isset ($_POST['cwidth'])) &&
-		(isset ($_POST['tsize'])))
+	if (isset ($_SESSION['fst']['user_id']))
 	{
-		$iNSFW = intval ($_POST['nsfw_yn']);
-		$iCWidth = intval ($_POST['cwidth']);
-		$iTSize = intval ($_POST['tsize']);
+		$iUserID = $_SESSION['fst']['user_id'];
 
-		if ((($iNSFW == 0) || ($iNSFW == 1)) &&
-			(($iCWidth >= 0) && ($iCWidth <= 13)) &&
-			(($iTSize == 100) || ($iTSize == 90) || ($iTSize == 80) ||
-				($iTSize == 70) || ($iTSize == 60) || ($iTSize == 50)))
+		if ((isset ($_POST['nsfw_yn'])) &&
+			(isset ($_POST['cwidth'])) &&
+			(isset ($_POST['tsize'])) &&
+			(isset ($_POST['musers'])))
 		{
-			$query_upd = "UPDATE `fst_user` SET
-					user_pref_nsfw='" . $iNSFW . "',
-					user_pref_cwidth='" . $iCWidth . "',
-					user_pref_tsize='" . $iTSize . "'
-				WHERE (user_id='" . $_SESSION['fst']['user_id'] . "')";
-			Query ($query_upd);
-			if (mysqli_affected_rows ($GLOBALS['link']) == 1)
+			$iNSFW = intval ($_POST['nsfw_yn']);
+			$iCWidth = intval ($_POST['cwidth']);
+			$iTSize = intval ($_POST['tsize']);
+			$sMUsers = $_POST['musers'];
+
+			if ((($iNSFW == 0) || ($iNSFW == 1)) &&
+				(($iCWidth >= 0) && ($iCWidth <= 13)) &&
+				(($iTSize == 100) || ($iTSize == 90) || ($iTSize == 80) ||
+					($iTSize == 70) || ($iTSize == 60) || ($iTSize == 50)))
 			{
-				$_SESSION['fst']['user_pref_nsfw'] = $iNSFW;
-				$_SESSION['fst']['user_pref_cwidth'] = $iCWidth;
-				$_SESSION['fst']['user_pref_tsize'] = $iTSize;
-				/***/
-				$_SESSION['fst']['preferences-saved'] = 1;
-				$arResult['result'] = 1;
-				$arResult['error'] = '';
+				$sError = '';
+
+				if ($sMUsers != '') /*** The textarea may be empty. ***/
+				{
+					$arMUsers = preg_split ('/(\r\n|\r|\n)/', $sMUsers);
+					foreach ($arMUsers as $sMUser)
+					{
+						if (strlen ($sMUser) == 0)
+						{
+							$sError = 'The username list contains an empty line.';
+						} else if (UserExists ($sMUser) === FALSE) {
+							$sError = 'Unknown username "' . Sanitize ($sMUser) .
+								'". Either they deleted their account, or you made a typo.';
+						}
+					}
+				}
+
+				if ($sError == '')
+				{
+					$query_upd = "UPDATE `fst_user` SET
+							user_pref_nsfw='" . $iNSFW . "',
+							user_pref_cwidth='" . $iCWidth . "',
+							user_pref_tsize='" . $iTSize . "',
+							user_pref_musers='" . mysqli_real_escape_string
+								($GLOBALS['link'], $sMUsers) . "'
+						WHERE (user_id='" . $iUserID . "')";
+					Query ($query_upd);
+					if (mysqli_affected_rows ($GLOBALS['link']) == 1)
+					{
+						$_SESSION['fst']['user_pref_nsfw'] = $iNSFW;
+						$_SESSION['fst']['user_pref_cwidth'] = $iCWidth;
+						$_SESSION['fst']['user_pref_tsize'] = $iTSize;
+						/***/
+						$_SESSION['fst']['preferences-saved'] = 1;
+						$arResult['result'] = 1;
+						$arResult['error'] = '';
+					} else {
+						$arResult['result'] = 0;
+						$arResult['error'] = 'Nothing changed.';
+					}
+				} else {
+					$arResult['result'] = 0;
+					$arResult['error'] = $sError;
+				}
 			} else {
 				$arResult['result'] = 0;
-				$arResult['error'] = 'Nothing changed.';
+				$arResult['error'] = 'Invalid value.';
 			}
 		} else {
 			$arResult['result'] = 0;
-			$arResult['error'] = 'Invalid value.';
+			$arResult['error'] = 'Data is missing.';
 		}
 	} else {
 		$arResult['result'] = 0;
-		$arResult['error'] = 'Data is missing.';
+		$arResult['error'] = 'Sign in to save.';
 	}
 } else {
 	$arResult['result'] = 0;

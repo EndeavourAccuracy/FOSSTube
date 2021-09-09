@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -170,6 +170,14 @@ function Messages ($iUserID)
 							break;
 					}
 					print (nl2br (Sanitize ($sMessage)));
+					if ($iSender == 0)
+					{
+print ('
+<span style="display:block; margin-top:10px; font-size:12px; font-style:italic;">
+<a href="/terms/">Terms of service</a> / <a href="/contact.php">Contact</a>
+</span>
+');
+					}
 					print ('</span>');
 				}
 			}

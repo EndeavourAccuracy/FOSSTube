@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -103,6 +103,7 @@ if ((isset ($_POST['csrf_token'])) &&
 							$iProjection) === TRUE))
 					{
 						$sDTNow = date ('Y-m-d H:i:s');
+						$sIP = GetIP();
 
 						$query_save = "UPDATE `fst_video` SET
 							video_title='" . mysqli_real_escape_string
@@ -121,6 +122,7 @@ if ((isset ($_POST['csrf_token'])) &&
 							video_nsfw='" . $iNSFW . "',
 							video_subtitles='" . mysqli_real_escape_string
 								($GLOBALS['link'], $sSubtitles) . "',
+							video_ip=IF(video_istext='2','" . $sIP . "',video_ip),
 							projection_id='" . $iProjection . "',
 							video_adddate=IF(video_istext='2','" . $sDTNow . "',video_adddate),
 							video_istext=IF(video_istext='2','1',video_istext)

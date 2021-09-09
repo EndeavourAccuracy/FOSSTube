@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -152,6 +152,8 @@ function Result ()
 		search_matcheso='" . $iMatchesOther . "',
 		search_adddate='" . $sDTNow . "'";
 	Query ($query_search);
+
+	print ('<p>See also the <a href="/search/">advanced search</a> page.</p>');
 
 	if (strtolower (substr ($sQuery, -1)) == 's')
 	{

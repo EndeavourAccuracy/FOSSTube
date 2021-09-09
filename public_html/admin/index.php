@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -236,6 +236,13 @@ function StatsSettings ()
 {
 	print ('<div class="admin-div">');
 
+	$sOwners = 'Owner(s): ' . implode (', ', $GLOBALS['owners']);
+	$sAdmins = 'Admin(s): ' . implode (', ', $GLOBALS['admins']);
+	$sMods = 'Mod(s): ' . implode (', ', $GLOBALS['mods']);
+	$sRights = '<span style="display:block;">' . $sOwners . ' | ' .
+		$sAdmins . ' | ' . $sMods . '</span>';
+	print ($sRights);
+
 	$iHomeSize = disk_free_space ($GLOBALS['home']);
 	$sHomeSize = '<span style="display:block;">' . $GLOBALS['home'] . ' = ' .
 		GetSizeHuman ($iHomeSize) . ' free space</span>';
@@ -305,6 +312,10 @@ function StatsSettings ()
 	print ($sTexts);
 
 	/*** active comments ***/
+	/* This is slightly higher than SUM(video_comments), because locked
+	 * forum topics have video_comments_allow set to 0, and are therefore
+	 * (inaccurately) not included in video_comments.
+	 */
 	$query_comments = "SELECT
 			COUNT(*) AS amount
 		FROM `fst_comment`
@@ -525,7 +536,7 @@ function Searches ()
 /*****************************************************************************/
 {
 	print ('<div class="admin-div">');
-	print ('<span style="display:block; font-style:italic;">Last 24h searches:</span>');
+	print ('<span style="display:block; font-style:italic;">Last 24h basic searches:</span>');
 	$query_search = "SELECT
 			search_text,
 			search_matchest,
@@ -562,7 +573,7 @@ function SearchesTop ()
 /*****************************************************************************/
 {
 	print ('<div class="admin-div">');
-	print ('<span style="display:block; font-style:italic;">Last 7d searches (limit 20):</span>');
+	print ('<span style="display:block; font-style:italic;">Last 7d basic searches (limit 20):</span>');
 	$query_search = "SELECT
 			COUNT(*) AS hits,
 			search_text
@@ -1207,16 +1218,12 @@ function MostLiked ()
 	print ('<div class="admin-div">');
 	print ('<span style="display:block; font-style:italic;">Most liked (limit 10):</span>');
 	$query_likes = "SELECT
-			fl.video_id,
-			fv.video_title,
-			COUNT(fl.likevideo_id) as likes
-		FROM `fst_likevideo` fl
-		LEFT JOIN `fst_video` fv
-			ON fl.video_id = fv.video_id
-		WHERE (fv.video_deleted='0')
-		GROUP BY fl.video_id
-		HAVING (likes > 0)
-		ORDER BY likes DESC
+			video_id,
+			video_title,
+			video_likes
+		FROM `fst_video`
+		WHERE (video_deleted='0')
+		ORDER BY video_likes DESC
 		LIMIT 10";
 	$result_likes = Query ($query_likes);
 	$iRows = mysqli_num_rows ($result_likes);
@@ -1228,7 +1235,7 @@ function MostLiked ()
 			$iVideoID = intval ($row_likes['video_id']);
 			$sCode = IDToCode ($iVideoID);
 			$sVideoTitle = $row_likes['video_title'];
-			$iLikes = intval ($row_likes['likes']);
+			$iLikes = intval ($row_likes['video_likes']);
 
 			print ($iLikes . ' - <a href="/v/' . $sCode . '">' .
 				Sanitize ($sVideoTitle) . '</a>');
@@ -1247,9 +1254,9 @@ function MostViews ()
 	print ('<div class="admin-div">');
 	print ('<span style="display:block; font-style:italic;">Most views (limit 10):</span>');
 	$query_views = "SELECT
-			video_views,
 			video_id,
-			video_title
+			video_title,
+			video_views
 		FROM `fst_video`
 		WHERE (video_deleted='0')
 		ORDER BY video_views DESC
@@ -1261,10 +1268,10 @@ function MostViews ()
 		$iRow = 0;
 		while ($row_views = mysqli_fetch_assoc ($result_views))
 		{
-			$iViews = intval ($row_views['video_views']);
 			$iVideoID = intval ($row_views['video_id']);
 			$sCode = IDToCode ($iVideoID);
 			$sVideoTitle = $row_views['video_title'];
+			$iViews = intval ($row_views['video_views']);
 
 			print (number_format ($iViews) . ' - <a href="/v/' . $sCode . '">' .
 				Sanitize ($sVideoTitle) . '</a>');

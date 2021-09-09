@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -352,21 +352,21 @@ print ('
 <![endif]-->
 <script src="/js/wNumb.min.js"></script>
 <script src="/js/nouislider.min.js"></script>
-<script src="/js/fst.js?v=39"></script>
+<script src="/js/fst.js?v=40"></script>
 
 <!-- CSS -->
 <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="/css/nouislider.min.css">
-<link rel="stylesheet" type="text/css" href="/css/fst.css?v=44">
+<link rel="stylesheet" type="text/css" href="/css/fst.css?v=45">
 ');
 
 if (!isset ($_SESSION['fst']['theme']))
 	{ $_SESSION['fst']['theme'] = $GLOBALS['default_theme']; }
 if ($_SESSION['fst']['theme'] == 'day')
 {
-	print ('<link rel="stylesheet" type="text/css" href="/css/fst_day.css?v=21" id="theme" data-theme="day">' . "\n");
+	print ('<link rel="stylesheet" type="text/css" href="/css/fst_day.css?v=22" id="theme" data-theme="day">' . "\n");
 } else {
-	print ('<link rel="stylesheet" type="text/css" href="/css/fst_night.css?v=21" id="theme" data-theme="night">' . "\n");
+	print ('<link rel="stylesheet" type="text/css" href="/css/fst_night.css?v=22" id="theme" data-theme="night">' . "\n");
 }
 
 print ('
@@ -658,18 +658,20 @@ function ValidateChars ($sString)
 function GetUserID ($sUsername)
 /*****************************************************************************/
 {
+	/*** Returns an ID or FALSE. ***/
+
 	$query_id = "SELECT
 			user_id
 		FROM `fst_user`
-		WHERE (user_username='" . $sUsername . "')";
+		WHERE (user_username='" . mysqli_real_escape_string
+			($GLOBALS['link'], $sUsername) . "')";
 	$result_id = Query ($query_id);
 	if (mysqli_num_rows ($result_id) == 1)
 	{
 		$row_id = mysqli_fetch_assoc ($result_id);
 		return ($row_id['user_id']);
 	} else {
-		print ('Unknown username.');
-		exit();
+		return (FALSE);
 	}
 }
 /*****************************************************************************/
@@ -883,6 +885,10 @@ function VideoTime ($iSeconds)
 function LikesVideo ($iVideoID)
 /*****************************************************************************/
 {
+	/* This function works, but is deprecated.
+	 * Wherever possible, use video_likes instead.
+	 */
+
 	$query_likes = "SELECT
 			COUNT(*) AS likes
 		FROM `fst_likevideo`
@@ -1058,12 +1064,16 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 		case 'dateasc': $sOrderBy = "video_adddate ASC, video_id ASC"; break;
 		case 'viewsdesc': $sOrderBy = "video_views DESC, video_id DESC"; break;
 		case 'viewsasc': $sOrderBy = "video_views ASC, video_id ASC"; break;
-		case 'likesdesc': $sOrderBy = "likes DESC, video_id DESC"; break;
-		case 'likesasc': $sOrderBy = "likes ASC, video_id ASC"; break;
-		case 'commentsdesc': $sOrderBy = "comments DESC, video_id DESC"; break;
-		case 'commentsasc': $sOrderBy = "comments ASC, video_id ASC"; break;
-		case 'secdesc': $sOrderBy = "video_seconds DESC, video_id DESC"; break;
-		case 'secasc': $sOrderBy = "video_seconds ASC, video_id ASC"; break;
+		case 'likesdesc': $sOrderBy = "video_likes DESC, video_id DESC"; break;
+		case 'likesasc': $sOrderBy = "video_likes ASC, video_id ASC"; break;
+		case 'commentsdesc':
+			$sOrderBy = "video_comments DESC, video_id DESC"; break;
+		case 'commentsasc':
+			$sOrderBy = "video_comments ASC, video_id ASC"; break;
+		case 'secdesc': $sOrderBy = "(video_seconds = 0), video_seconds DESC," .
+			" video_id DESC"; break;
+		case 'secasc': $sOrderBy = "(video_seconds = 0), video_seconds ASC," .
+			" video_id ASC"; break;
 		/*** folder ***/
 		case 'itemdesc': $sOrderBy = "folderitem_order DESC, video_id DESC"; break;
 	}
@@ -1114,11 +1124,11 @@ function Videos ($sDivID, $sSection, $sWhere, $sOrder, $iLimit, $iOffset,
 			video_720,
 			video_1080,
 			video_views,
+			video_likes,
+			video_comments,
 			video_adddate,
 			video_istext,
 			projection_id,
-			(SELECT COUNT(*) FROM `fst_likevideo` WHERE (video_id = fv.video_id)) AS likes,
-			(SELECT COUNT(*) FROM `fst_comment` WHERE (video_id = fv.video_id) AND (comment_hidden='0') AND (fv.video_comments_allow='1') AND ((fv.video_comments_show='1') OR ((fv.video_comments_show='2') AND (comment_approved='1')))) AS comments,
 			fu.user_username
 		" . $sFromStart . "
 		LEFT JOIN `fst_user` fu
@@ -2624,6 +2634,68 @@ function Topics ($iBoard, $iUserID, $iJustNewContent)
 	}
 
 	return ($arTopics);
+}
+/*****************************************************************************/
+function UpdateCountLikes ($iVideoID)
+/*****************************************************************************/
+{
+	$query_update = "UPDATE `fst_video` fv SET
+			video_likes=(
+				SELECT
+					COUNT(*)
+				FROM `fst_likevideo` fl
+				WHERE (fl.video_id='" . $iVideoID . "')
+			)
+		WHERE (fv.video_id='" . $iVideoID . "')";
+	Query ($query_update);
+}
+/*****************************************************************************/
+function UpdateCountComments ($iVideoID)
+/*****************************************************************************/
+{
+	$query_update = "UPDATE `fst_video` fv SET
+			video_comments=(
+				SELECT
+					COUNT(*)
+				FROM `fst_comment` fc
+				WHERE (fc.video_id='" . $iVideoID . "')
+				AND (fc.comment_hidden='0')
+				AND (fv.video_comments_allow='1')
+				AND (
+					(fv.video_comments_show='1')
+					OR (
+						(fv.video_comments_show='2')
+						AND (fc.comment_approved='1')
+					)
+				)
+			)
+		WHERE (fv.video_id='" . $iVideoID . "')";
+	Query ($query_update);
+}
+/*****************************************************************************/
+function FewerNotif ($sUserFrom, $sUserTo)
+/*****************************************************************************/
+{
+	$sReturn = FALSE;
+
+	$query_fewer = "SELECT
+			user_pref_musers
+		FROM `fst_user`
+		WHERE (user_username='" . mysqli_real_escape_string
+			($GLOBALS['link'], $sUserTo) . "')";
+	$result_fewer = Query ($query_fewer);
+	if (mysqli_num_rows ($result_fewer) == 1)
+	{
+		$row_fewer = mysqli_fetch_assoc ($result_fewer);
+		$sMUsers = $row_fewer['user_pref_musers'];
+		if ($sMUsers != '')
+		{
+			$arMUsers = preg_split ('/[\n\r]+/', $sMUsers);
+			if (in_array ($sUserFrom, $arMUsers) === TRUE) { $sReturn = TRUE; }
+		}
+	}
+
+	return ($sReturn);
 }
 /*****************************************************************************/
 

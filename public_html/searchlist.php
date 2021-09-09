@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -44,11 +44,11 @@ if (isset ($_POST['search_query']))
 	$sHTML = '';
 	$query_titles = "SELECT
 			video_title,
-			(SELECT COUNT(*) FROM `fst_likevideo` WHERE (video_id = `fst_video`.video_id)) AS likes
+			video_likes
 		FROM `fst_video`
 		" . $sWhereStart . "
 		" . $sWhereTitle . "
-		ORDER BY likes DESC, video_title
+		ORDER BY video_likes DESC, video_title
 		LIMIT 10";
 	$result_titles = Query ($query_titles);
 	while ($row_titles = mysqli_fetch_assoc ($result_titles))

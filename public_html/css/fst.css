@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -510,4 +510,29 @@ select {
 }
 .pollbar.empty {
 	background-color:#999;
+}
+
+/*** Advanced search. ***/
+.asearch-row-first {
+	display:block;
+	border-width:1px 0;
+	border-style:solid;
+}
+.asearch-row-rest {
+	display:block;
+	border-width:0 0 1px 0;
+	border-style:solid;
+}
+.asearch-span {
+	display:inline-block;
+	padding:5px;
+	vertical-align:top;
+	overflow:hidden;
+	white-space:nowrap;
+}
+.asearch-title {}
+.more-span {
+	font-weight:bold;
+	cursor:pointer;
+	font-size:18px;
 }

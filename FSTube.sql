@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -48,6 +48,7 @@ CREATE TABLE `fst_user` (
 	`user_pref_nsfw` tinyint(1) NOT NULL DEFAULT '0',
 	`user_pref_cwidth` int(11) NOT NULL DEFAULT 0,
 	`user_pref_tsize` int(11) NOT NULL DEFAULT 80,
+	`user_pref_musers` mediumtext NOT NULL,
 	PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE `fst_faillogin` (
@@ -92,6 +93,8 @@ CREATE TABLE `fst_video` (
 	`video_1080_height` int(11) NOT NULL DEFAULT '0',
 	`video_ip` VARCHAR(100) NOT NULL,
 	`video_views` int(11) NOT NULL DEFAULT '0',
+	`video_likes` int NOT NULL DEFAULT '0',
+	`video_comments` int NOT NULL DEFAULT '0',
 	`video_deleted` tinyint(1) NOT NULL DEFAULT '0',
 	`video_deletedate` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
 	`video_adddate` datetime NOT NULL,

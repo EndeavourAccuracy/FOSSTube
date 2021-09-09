@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -60,19 +60,26 @@ if ((isset ($_POST['csrf_token'])) &&
 				$row_requests = mysqli_fetch_assoc ($result_requests);
 				if ($row_requests['requests'] == 0)
 				{
-					$sDTNow = date ('Y-m-d H:i:s');
+					if (FewerNotif (GetUserInfo ($iUserRequestor, 'user_username'),
+						GetUserInfo ($iUserRecipient, 'user_username')) === FALSE)
+					{
+						$sDTNow = date ('Y-m-d H:i:s');
 
-					$query_insert = "INSERT INTO `fst_request` SET
-						user_id_requestor='" . $iUserRequestor . "',
-						user_id_recipient='" . $iUserRecipient . "',
-						request_type='" . $iType . "',
-						request_adddate='" . $sDTNow . "',
-						request_status='2'";
-					Query ($query_insert);
+						$query_insert = "INSERT INTO `fst_request` SET
+							user_id_requestor='" . $iUserRequestor . "',
+							user_id_recipient='" . $iUserRecipient . "',
+							request_type='" . $iType . "',
+							request_adddate='" . $sDTNow . "',
+							request_status='2'";
+						Query ($query_insert);
 
-					$_SESSION['fst']['sent'] = 1;
-					$arResult['result'] = 1;
-					$arResult['error'] = '';
+						$_SESSION['fst']['sent'] = 1;
+						$arResult['result'] = 1;
+						$arResult['error'] = '';
+					} else {
+						$arResult['result'] = 0;
+						$arResult['error'] = 'This user does not accept requests.';
+					}
 				} else {
 					$arResult['result'] = 0;
 					$arResult['error'] = 'This request is already pending.';

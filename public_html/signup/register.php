@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -83,7 +83,8 @@ if ((isset ($_POST['username'])) &&
 			user_lastlogindt='" . $sDTNow . "',
 			user_pref_nsfw='" . $GLOBALS['default_pref']['user_pref_nsfw'] . "',
 			user_pref_cwidth='" . $GLOBALS['default_pref']['user_pref_cwidth'] . "',
-			user_pref_tsize='" . $GLOBALS['default_pref']['user_pref_tsize'] . "'";
+			user_pref_tsize='" . $GLOBALS['default_pref']['user_pref_tsize'] . "',
+			user_pref_musers=''";
 		$result_insert = Query ($query_insert);
 
 		/*** Session. ***/

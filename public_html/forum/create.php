@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -69,7 +69,7 @@ if ((isset ($_POST['csrf_token'])) &&
 									$sError = 'The poll question must be 0-100 characters' .
 										' (UTF-16 code units). Currently: ' . $iQuestionLen;
 								}
-								$arOptions = preg_split ('/[\n\r]+/', $sOptions);
+								$arOptions = preg_split ('/(\r\n|\r|\n)/', $sOptions);
 								$iNrOptions = 0;
 								foreach ($arOptions as $sOption)
 								{
@@ -157,6 +157,8 @@ if ((isset ($_POST['csrf_token'])) &&
 									video_1080_height='0',
 									video_ip='" . $sIP . "',
 									video_views='0',
+									video_likes='0',
+									video_comments='0',
 									video_deleted='0',
 									video_deletedate='1970-01-01 00:00:00',
 									video_adddate='" . $sDTNow . "',

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -432,12 +432,12 @@ $(document).ready(function(){
 					if (theme == "day")
 					{
 						$("#theme").data("theme","day");
-						$("#theme").attr("href","/css/fst_day.css?v=21");
+						$("#theme").attr("href","/css/fst_day.css?v=22");
 						$("#switch-img").attr("alt","night");
 						$("#switch-img").attr("src","/images/theme/night.png");
 					} else {
 						$("#theme").data("theme","night");
-						$("#theme").attr("href","/css/fst_night.css?v=21");
+						$("#theme").attr("href","/css/fst_night.css?v=22");
 						$("#switch-img").attr("alt","day");
 						$("#switch-img").attr("src","/images/theme/day.png");
 					}

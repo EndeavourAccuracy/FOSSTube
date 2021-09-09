@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -31,9 +31,9 @@ function FormAdopt ()
 			fu.user_username,
 			fv.video_title,
 			fv.video_views,
-			fv.video_deletedate,
-			(SELECT COUNT(*) FROM `fst_likevideo` WHERE (video_id = fv.video_id)) AS likes,
-			(SELECT COUNT(*) FROM `fst_comment` WHERE (video_id = fv.video_id) AND comment_hidden='0') AS comments
+			fv.video_likes,
+			fv.video_comments,
+			fv.video_deletedate
 		FROM `fst_video` fv
 		LEFT JOIN `fst_user` fu
 			ON fv.user_id = fu.user_id
@@ -60,10 +60,10 @@ You may adopt the following semi-deleted video(s). <a target="_blank" href="/faq
 			$sUsername = $row_deleted['user_username'];
 			$sVideoTitle = $row_deleted['video_title'];
 			$iVideoViews = $row_deleted['video_views'];
+			$iLikes = intval ($row_deleted['video_likes']);
+			$iComments = intval ($row_deleted['video_comments']);
 			$sVideoDelDT = $row_deleted['video_deletedate'];
 			$sVideoDelDate = date ('j F Y (H:i)', strtotime ($sVideoDelDT));
-			$iLikes = intval ($row_deleted['likes']);
-			$iComments = intval ($row_deleted['comments']);
 
 			$sLink = ' (<a target="_blank" href="' .
 				VideoURL ($sCode, '360') . '">watch</a>, ' . $iLikes . ' likes, ' .

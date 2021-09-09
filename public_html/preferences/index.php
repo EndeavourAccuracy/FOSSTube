@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -29,7 +29,8 @@ function FormPref ()
 	$query_pref = "SELECT
 			user_pref_nsfw,
 			user_pref_cwidth,
-			user_pref_tsize
+			user_pref_tsize,
+			user_pref_musers
 		FROM `fst_user`
 		WHERE (user_id='" . $_SESSION['fst']['user_id'] . "')";
 	$result_pref = Query ($query_pref);
@@ -39,9 +40,14 @@ function FormPref ()
 		{ $iCheckedNSFW = ' checked'; } else { $iCheckedNSFW = ''; }
 	$iCWidth = intval ($row_pref['user_pref_cwidth']);
 	$iTSize = intval ($row_pref['user_pref_tsize']);
+	$sMUsers = $row_pref['user_pref_musers'];
+
+	print ('<hr class="fst-hr" style="margin:10px 0;">');
+
+	print ('<h2>General settings</h2>');
 
 print ('
-<input type="checkbox" id="nsfw_yn"' . $iCheckedNSFW . '> Show NSFW content.
+<input type="checkbox" id="nsfw_yn"' . $iCheckedNSFW . '> Show <abbr title="not safe for work">NSFW</abbr> content.
 ');
 
 	/*** cwidth ***/
@@ -70,6 +76,26 @@ print ('
 	print ('</select>');
 	print ('</span>');
 
+	print ('<hr class="fst-hr" style="margin:10px 0;">');
+
+print ('
+<h2 style="margin-top:10px;">
+Fewer notifications about certain users
+</h2>
+');
+
+	/*** musers ***/
+print ('
+<p>To get fewer on-site notifications about certain users, add their usernames below. You will no longer be notified about their replies to your comments, and no longer receive their requests. Note that you will still be notified about comments they add under content you have published (unless you muted them), and about their new content if you subscribed to them.</p>
+<label for="musers" class="lbl">
+Place each username on a new line:
+</label>
+<textarea id="musers" style="width:600px; max-width:100%; height:70px;">' .
+	Sanitize ($sMUsers) . '</textarea>
+');
+
+	print ('<hr class="fst-hr" style="margin:10px 0;">');
+
 print ('
 <div id="preferences-error" style="color:#f00; margin-top:10px;"></div>
 <input type="button" id="preferences-save" value="Save">
@@ -83,6 +109,7 @@ $("#preferences-save").click(function(){
 		{ var nsfw_yn = 0; } else { var nsfw_yn = 1; }
 	var cwidth = $("#cwidth").val();
 	var tsize = $("#tsize").val();
+	var musers = $("#musers").val();
 	$.ajax({
 		type: "POST",
 		url: "/preferences/save.php",
@@ -90,6 +117,7 @@ $("#preferences-save").click(function(){
 			nsfw_yn : nsfw_yn,
 			cwidth : cwidth,
 			tsize : tsize,
+			musers : musers,
 			csrf_token : "' . $_SESSION['fst']['csrf_token'] . '"
 		}),
 		dataType: "json",

@@ -1,4 +1,3 @@
-<?php
 /* SPDX-License-Identifier: Zlib */
 /* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
@@ -20,6 +19,9 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-header ('Location: /');
-exit();
-?>
+ALTER TABLE `fst_video` ADD COLUMN video_likes int(11) NOT NULL DEFAULT '0' AFTER video_views;
+ALTER TABLE `fst_video` ADD COLUMN video_comments int(11) NOT NULL DEFAULT '0' AFTER video_likes;
+UPDATE `fst_video` fv SET video_likes=(SELECT COUNT(*) FROM `fst_likevideo` fl WHERE (fv.video_id = fl.video_id));
+UPDATE `fst_video` fv SET video_comments=(SELECT COUNT(*) FROM `fst_comment` fc WHERE (fv.video_id = fc.video_id) AND (fc.comment_hidden='0') AND (fv.video_comments_allow='1') AND ((fv.video_comments_show='1') OR ((fv.video_comments_show='2') AND (fc.comment_approved='1'))));
+
+ALTER TABLE `fst_user` ADD user_pref_musers mediumtext NOT NULL AFTER user_pref_tsize;

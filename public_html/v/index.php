@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -1119,7 +1119,7 @@ Last modified on ' . $sDateSave . '.
 			}
 
 print ('
-' . $sFPS . 'Views: ' . $iViews . '
+' . $sFPS . 'Views: ' . number_format ($iViews) . '
 </span>
 <span style="display:block; clear:both;"></span>
 </div>

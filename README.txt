@@ -7,7 +7,7 @@
 
 ===[1 - ABOUT]=================================================================
 
-FSTube v1.2 (August 2021)
+FSTube v1.3 (September 2021)
 Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
 
 A free and open-source video sharing content management system.
@@ -68,6 +68,7 @@ PHP QR Code 1.1.4: LGPL3
 * Per-user monetization options (processors, cryptocurrencies), including a modal dialog.
 * Sitewide 4-byte UTF-8 Unicode support (inc. emoji).
 * Search, with autocomplete and hits preview.
+* Advanced search page, with optional user filter, custom ordering, etc.
 * Extensive content reporting options, a moderation queue, and banning options.
 * Content pagination.
 * Server-side transcoding queue.
@@ -99,7 +100,7 @@ PHP QR Code 1.1.4: LGPL3
 * Users can change their email addresses, passwords, and usernames.
 * Video playback speed control.
 * Users can browse their comment history and subscriptions.
-* User preferences: show NSFW content, home container width, thumbnail size.
+* User preferences: show NSFW content, home container width, thumbnail size, fewer notifications about certain users.
 * Users can send and receive information requests (email address).
 * Admins can change forum topic titles, and lock forum topics.
 * Customizable 404 Not Found page.
@@ -140,7 +141,7 @@ The assumption is that FSTube will be installed in the root of your domain. Runn
 You must have a non-public directory (such as private/) on the same level as your website directory (such as public_html/ or www/). Virtually all accounts have this nowadays. If your account does not, (ask your webmaster to) create one.
 
 First, check if any addendums have been issued for this text:
-https://www.fstube.org/addendums/1.2/
+https://www.fstube.org/addendums/1.3/
 
 Add
 character-set-server=utf8mb4

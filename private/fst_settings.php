@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -73,7 +73,7 @@ $GLOBALS['admins'] = array ('user2');
 $GLOBALS['mods'] = array ('user3', 'user4');
 
 $GLOBALS['disallowed_usernames'] = array ('yourdomain', 'admin', 'webmaster', 'postmaster', 'root', 'administrator', 'sysadmin', 'moderator', 'webadmin');
-$GLOBALS['disallowed_email_ends'] = array ('.onion', 'yandex.com', 'yandex.ru');
+$GLOBALS['disallowed_email_ends'] = array ('.onion', 'yandex.com', 'yandex.ru', 'onionmail.org');
 $GLOBALS['items_per_page'] = 24;
 /***
 $sGrep = 'grep -c processor /proc/cpuinfo';

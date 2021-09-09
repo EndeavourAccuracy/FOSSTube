@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.2 (August 2021)
+/* FSTube v1.3 (September 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -84,6 +84,9 @@ print ('
 </a>
 <a target="_blank" href="/request/' . $sUser . '/1">
 <img src="/images/icon_email.png" title="request email address" alt="request email address">
+</a>
+<a target="_blank" href="/search/?user=' . Sanitize ($sUser) . '">
+<img src="/images/icon_asearch.png" title="advanced search" alt="advanced search">
 </a>
 </div>
 </div>
