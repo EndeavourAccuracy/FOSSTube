@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -75,12 +75,14 @@ if ((isset ($_POST['username'])) &&
 			user_warnings_video='0',
 			user_warnings_comment='0',
 			user_warnings_avatar='0',
+			user_warnings_mbpost='0',
 			user_deleted='0',
 			user_deleted_reason='',
 			user_regip='" . mysqli_real_escape_string
 				($GLOBALS['link'], $sIP) . "',
 			user_regdt='" . $sDTNow . "',
 			user_lastlogindt='" . $sDTNow . "',
+			user_patron='0',
 			user_pref_nsfw='" . $GLOBALS['default_pref']['user_pref_nsfw'] . "',
 			user_pref_cwidth='" . $GLOBALS['default_pref']['user_pref_cwidth'] . "',
 			user_pref_tsize='" . $GLOBALS['default_pref']['user_pref_tsize'] . "',

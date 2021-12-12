@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -125,6 +125,50 @@ function Sanitize ($sUserInput)
 	$sReturn = str_ireplace ('javascript', 'JS', $sReturn);
 
 	return ($sReturn);
+}
+/*****************************************************************************/
+function UpdateCountCommentsVideo ($iVideoID)
+/*****************************************************************************/
+{
+	$query_update = "UPDATE `fst_video` fv SET
+			video_comments=(
+				SELECT
+					COUNT(*)
+				FROM `fst_comment` fc
+				WHERE (fc.video_id='" . $iVideoID . "')
+				AND (fc.comment_hidden='0')
+				AND (fv.video_comments_allow='1')
+				AND (
+					(fv.video_comments_show='1')
+					OR (
+						(fv.video_comments_show='2')
+						AND (fc.comment_approved='1')
+					)
+				)
+			)
+		WHERE (fv.video_id='" . $iVideoID . "')";
+	Query ($query_update);
+}
+/*****************************************************************************/
+function UpdateCountReblogsMBPost ($iPostID)
+/*****************************************************************************/
+{
+	/* Two queries, because MySQL disallows using a table that is
+	 * being updated in a FROM clause, even in a subquery.
+	 */
+	$query_count = "SELECT
+			COUNT(*) AS count
+		FROM `fst_microblog_post`
+		WHERE (mbpost_id_reblog='" . $iPostID . "')
+		AND (mbpost_hidden='0')";
+	$result_count = Query ($query_count);
+	$row_count = mysqli_fetch_assoc ($result_count);
+	$iCount = intval ($row_count['count']);
+
+	$query_update = "UPDATE `fst_microblog_post` SET
+			mbpost_reblogs='" . $iCount . "'
+		WHERE (mbpost_id='" . $iPostID . "')";
+	Query ($query_update);
 }
 /*****************************************************************************/
 ?>

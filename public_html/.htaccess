@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Zlib
-# FSTube v1.3 (September 2021)
+# FSTube v1.4 (December 2021)
 # Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
 #
 # This software is provided 'as-is', without any express or implied
@@ -93,6 +93,10 @@ RewriteRule ^editf/(.*)$ /editf/index.php?folder=$1 [NC,L,QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^folder/(.*)$ /folder/index.php?folder=$1 [NC,L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^status/(.*)/([0-9]*)$ /status/index.php?user=$1&post=$2 [NC,L,QSA]
 
 <FilesMatch "\.(mp4)$">
 Header set Expires "Mon, 27 Mar 2038 13:33:37 GMT"

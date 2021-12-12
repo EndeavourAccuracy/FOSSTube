@@ -1,3 +1,10 @@
+v1.4 (December 12, 2021) - Norbert de Jonge
+--------------------
++ Twitter-like microblogging on user pages, including likes, reblogs, following and timeline, hashtags and hashflags, status pages, and explore (search).
++ Featured content.
++ Trending page, based on daily top 10 logs.
+* Fixed a minor poll voting bug.
+
 v1.3 (September 9, 2021) - Norbert de Jonge
 --------------------
 + Advanced search page.

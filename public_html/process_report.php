@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -29,6 +29,7 @@ if ((isset ($_POST['csrf_token'])) &&
 {
 	if ((isset ($_POST['video'])) &&
 		(isset ($_POST['comment'])) &&
+		(isset ($_POST['mbpost'])) &&
 		(isset ($_POST['user'])) &&
 		(isset ($_POST['problem'])) &&
 		(isset ($_POST['occursattime'])) &&
@@ -44,6 +45,7 @@ if ((isset ($_POST['csrf_token'])) &&
 		{
 			$sError = '';
 			$iReportType = 0;
+			/***/
 			$arVideo = VideoExists ($_POST['video']);
 			if ($arVideo !== FALSE)
 			{
@@ -51,6 +53,7 @@ if ((isset ($_POST['csrf_token'])) &&
 				$iUserID = $arVideo['user_id'];
 				$iVideoID = $arVideo['id'];
 			} else { $iVideoID = 0; }
+			/***/
 			$arComment = CommentExists ($_POST['comment'], 0);
 			if ($arComment !== FALSE)
 			{
@@ -58,18 +61,32 @@ if ((isset ($_POST['csrf_token'])) &&
 				$iUserID = $arComment['user_id'];
 				$iCommentID = $arComment['id'];
 			} else { $iCommentID = 0; }
-			$arUser = UserExists ($_POST['user']);
-			if ($arUser !== FALSE)
+			/***/
+			$arPost = MBPostExists ($_POST['user'], $_POST['mbpost']);
+			if ($arPost !== FALSE)
 			{
-				$iReportType = 3;
-				$iUserID = $arUser['id'];
+				$iReportType = 5;
+				$iUserID = $arPost['user_id'];
+				$iPostID = $arPost['id'];
+			} else { $iPostID = 0; }
+			/***/
+			if ($iReportType != 5)
+			{
+				$arUser = UserExists ($_POST['user']);
+				if ($arUser !== FALSE)
+				{
+					$iReportType = 3;
+					$iUserID = $arUser['id'];
+				}
 			}
+			/***/
 			$sMessage = $_POST['message'];
 			if ($sMessage != '')
 			{
 				$iReportType = 4;
 				$iUserID = 0;
 			}
+			/***/
 			if ($iReportType == 0)
 				{ $sError = 'Unknown report type.'; }
 			if (strlen ($sMessage) > 5000)
@@ -77,7 +94,7 @@ if ((isset ($_POST['csrf_token'])) &&
 			$arIssue = IssueExists ($_POST['problem']);
 			if ($arIssue === FALSE)
 			{
-				if (($iReportType >= 1) && ($iReportType <= 3))
+				if (in_array ($iReportType, array (1, 2, 3, 5)) === TRUE)
 				{
 					$sError = 'You must select an issue.';
 				} else { $iIssueID = 0; }
@@ -120,6 +137,7 @@ if ((isset ($_POST['csrf_token'])) &&
 						($GLOBALS['link'], $sOccursAtTime) . "',
 					video_id='" . $iVideoID . "',
 					comment_id='" . $iCommentID . "',
+					mbpost_id='" . $iPostID . "',
 					user_id='" . $iUserID . "',
 					message='" . mysqli_real_escape_string
 						($GLOBALS['link'], $sMessage) . "',

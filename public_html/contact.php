@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -156,6 +156,28 @@ print ('
 		}
 	}
 
+	if ((isset ($_GET['mbuser'])) &&
+		(isset ($_GET['mbpost'])))
+	{
+		$sUsername = $_GET['mbuser'];
+		$iPostID = intval ($_GET['mbpost']);
+		$arPost = MBPostExists ($sUsername, $iPostID);
+		if ($arPost !== FALSE)
+		{
+			print ('<h2>Report microblog post</h2>');
+			print ('<div class="note report">');
+			print ('Complete the form below to report this microblog post.<br>');
+			print (nl2br (Sanitize ($arPost['text'])) . '</div>');
+			print ('<input type="hidden" id="user" value="' .
+				Sanitize ($sUsername) . '">');
+			print ('<input type="hidden" id="mbpost" value="' . $iPostID . '">');
+			ListIssues ('issue_ind_mbpost', 0);
+			$bReport = TRUE;
+		} else {
+			print ('<div class="note error">Unknown post.</div>');
+		}
+	}
+
 	if ($bReport === TRUE)
 	{
 		$sButtonValue = 'Report';
@@ -229,6 +251,8 @@ $("#send").click(function (event) {
 	if (typeof (video) === "undefined") { video = ""; }
 	var comment = $("#comment").val();
 	if (typeof (comment) === "undefined") { comment = ""; }
+	var mbpost = $("#mbpost").val();
+	if (typeof (mbpost) === "undefined") { mbpost = ""; }
 	var user = $("#user").val();
 	if (typeof (user) === "undefined") { user = ""; }
 	var problem = $("input[name=\"problem\"]:checked").val();
@@ -241,11 +265,11 @@ $("#send").click(function (event) {
 	if (typeof (message) === "undefined") { message = ""; }
 	if ($("#agree").is(":checked"))
 		{ var agree = 1; } else { var agree = 0; }
-	ProcessReport (video, comment, user, problem, occursattime,
+	ProcessReport (video, comment, mbpost, user, problem, occursattime,
 		captcha, email, message, agree);
 });
 
-function ProcessReport (video, comment, user, problem, occursattime,
+function ProcessReport (video, comment, mbpost, user, problem, occursattime,
 	captcha, email, message, agree) {
 	$.ajax({
 		type: "POST",
@@ -253,6 +277,7 @@ function ProcessReport (video, comment, user, problem, occursattime,
 		data: ({
 			video : video,
 			comment : comment,
+			mbpost : mbpost,
 			user : user,
 			problem : problem,
 			occursattime : occursattime,

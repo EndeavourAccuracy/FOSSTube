@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -23,13 +23,13 @@
 include_once (dirname (__FILE__) . '/../fst_base.php');
 
 /*****************************************************************************/
-function HideVideoOrComment ($row_report, $bWarning)
+function HideMaterial ($row_report, $bWarning)
 /*****************************************************************************/
 {
 	$iReportType = $row_report['report_type'];
 	$sDTNow = date ('Y-m-d H:i:s');
 
-	if ($iReportType == 1) /*** video ***/
+	if ($iReportType == 1) /*** video, text, topic ***/
 	{
 		/*** $sTitle ***/
 		$query_title = "SELECT
@@ -73,7 +73,7 @@ function HideVideoOrComment ($row_report, $bWarning)
 			WHERE (comment_id='" . $row_report['comment_id'] . "')";
 		$result_update = Query ($query_update);
 		$row_update = mysqli_fetch_assoc ($result_update);
-		UpdateCountComments ($row_update['video_id']);
+		UpdateCountCommentsVideo ($row_update['video_id']);
 
 		if ($bWarning === TRUE)
 		{
@@ -84,6 +84,28 @@ function HideVideoOrComment ($row_report, $bWarning)
 		}
 
 		return ('comment');
+	}
+
+	if ($iReportType == 5) /*** mbpost ***/
+	{
+		$query_update = "UPDATE `fst_microblog_post` SET
+				mbpost_hidden='1'
+			WHERE (mbpost_id='" . $row_report['mbpost_id'] . "')";
+		Query ($query_update);
+		/***/
+		$iReblogID = GetReblogID ($row_report['mbpost_id']);
+		if ($iReblogID != 0)
+			{ UpdateCountReblogsMBPost ($iReblogID); }
+
+		if ($bWarning === TRUE)
+		{
+			$query_user = "UPDATE `fst_user` SET
+					user_warnings_mbpost=user_warnings_mbpost+1
+				WHERE (user_id='" . $row_report['user_id'] . "')";
+			Query ($query_user);
+		}
+
+		return ('microblog post');
 	}
 }
 /*****************************************************************************/
@@ -122,7 +144,7 @@ function BanUser ($iUserID)
 	/*** avatar ***/
 	DeleteAvatar ($iUserID, FALSE);
 
-	/*** videos ***/
+	/*** videos, texts, topics ***/
 	$query_videos = "UPDATE `fst_video` SET
 			video_deleted='3',
 			video_deletedate='" . $sDTNow . "'
@@ -134,14 +156,17 @@ function BanUser ($iUserID)
 			comment_hidden='1'
 		WHERE (user_id='" . $iUserID . "')";
 	Query ($query_comments);
-	/***/
-	$query_update = "SELECT
-			DISTINCT(video_id)
-		FROM `fst_comment`
+
+	/*** mbposts ***/
+	$query_posts = "UPDATE `fst_microblog_post` SET
+			mbpost_hidden='1'
 		WHERE (user_id='" . $iUserID . "')";
-	$result_update = Query ($query_update);
-	while ($row_update = mysqli_fetch_assoc ($result_update))
-		{ UpdateCountComments ($row_update['video_id']); }
+	Query ($query_posts);
+
+	/*** Update counts via cron. ***/
+	$query_add = "INSERT INTO `fst_updatecounts` SET
+		user_id_deleted='" . $iUserID . "'";
+	Query ($query_add);
 
 	/*** IP ***/
 	$sIP = GetUserInfo ($iUserID, 'user_regip');
@@ -191,6 +216,7 @@ if ((isset ($_POST['csrf_token'])) &&
 					issue_id,
 					video_id,
 					comment_id,
+					mbpost_id,
 					user_id,
 					message,
 					report_email,
@@ -214,18 +240,18 @@ if ((isset ($_POST['csrf_token'])) &&
 					case 3: /*** Ban report_ip. ***/
 						BanIP ($row_report['report_ip'], FALSE);
 						break;
-					case 4: /*** Hide content/comment + request admin input. ***/
-						HideVideoOrComment ($row_report, FALSE);
+					case 4: /*** Hide content/comment/post + request admin input. ***/
+						HideMaterial ($row_report, FALSE);
 						/***/
 						SendEmail ($GLOBALS['mail_admins'], array(),
 							'[ ' . $GLOBALS['name'] . ' ] Request',
 							'Admin input requested.');
 						break;
-					case 5: /*** Hide content/comment. ***/
-						HideVideoOrComment ($row_report, FALSE);
+					case 5: /*** Hide content/comment/post. ***/
+						HideMaterial ($row_report, FALSE);
 						break;
-					case 6: /*** Hide content/comment + email user_id warning. ***/
-						$sType = HideVideoOrComment ($row_report, TRUE);
+					case 6: /*** Hide content/comment/post + email user_id warning. ***/
+						$sType = HideMaterial ($row_report, TRUE);
 						/***/
 						$sUserEmail = GetUserInfo ($row_report['user_id'], 'user_email');
 						SendEmail ($sUserEmail, array(),
@@ -243,7 +269,7 @@ if ((isset ($_POST['csrf_token'])) &&
 							'[ ' . $GLOBALS['name'] . ' ] Warning',
 							'A moderator has removed your avatar and profile text.' . '<br>' . 'Please reread the <a href="' . $GLOBALS['protocol'] . '://www.' . $GLOBALS['domain'] . '/terms/">Terms of service</a>.' . '<br>' . 'Users who add content that is disallowed may get banned.');
 						break;
-					case 9: /*** Ban user_id + delete all their content/comments. ***/
+					case 9: /*** Ban user_id + delete their content/comments/posts. ***/
 						BanUser ($row_report['user_id']);
 						break;
 					case 10: /*** Email this feedback to the admin(s). ***/
@@ -325,6 +351,7 @@ if ((isset ($_POST['csrf_token'])) &&
 							AND (issue_id='" . $row_report['issue_id'] . "')
 							AND (video_id='" . $row_report['video_id'] . "')
 							AND (comment_id='" . $row_report['comment_id'] . "')
+							AND (mbpost_id='" . $row_report['mbpost_id'] . "')
 							AND (user_id='" . $row_report['user_id'] . "')
 							AND (report_action='0')
 							AND (report_type<>'4')

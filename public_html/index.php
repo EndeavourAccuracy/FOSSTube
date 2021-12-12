@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -75,6 +75,8 @@ Users can not login. Please check back later.
 
 	Search ('');
 
+	Featured();
+
 	/*** $sNSFW, $iNSFW ***/
 	if (isset ($_SESSION['fst']['user_id']))
 	{
@@ -94,6 +96,7 @@ Users can not login. Please check back later.
 	}
 
 print ('
+<div style="float:left;">
 <span style="display:block; margin-bottom:10px;">
 New with
 <select id="threshold">
@@ -104,6 +107,21 @@ New with
 print ('</select>
 views and ' . $sNSFW . ':
 </span>
+</div>
+
+<div style="float:right;">
+');
+	if (isset ($_SESSION['fst']['user_id']))
+	{
+		print ('<a href="/timeline/"><img src="/images/icon32_timeline.png" title="timeline" alt="timeline"></a>');
+	} else {
+		print ('<a href="/signin/" style="line-height:30px;">Sign in</a>');
+	}
+print ('
+</div>
+
+<div style="clear:both;"></div>
+
 <div id="videos"><img src="/images/loading.gif" alt="loading"></div>
 <script>
 var filters = {};
@@ -153,7 +171,7 @@ function Result ()
 		search_adddate='" . $sDTNow . "'";
 	Query ($query_search);
 
-	print ('<p>See also the <a href="/search/">advanced search</a> page.</p>');
+	print ('<p>See also the <a href="/search/">advanced search</a> and <a href="/explore/">explore</a> pages.</p>');
 
 	if (strtolower (substr ($sQuery, -1)) == 's')
 	{
@@ -247,6 +265,45 @@ User matches for "' . Sanitize ($sQuery) . '":
 		}
 		print ('</span>');
 	}
+}
+/*****************************************************************************/
+function Featured ()
+/*****************************************************************************/
+{
+	/*** $arVideoIDs ***/
+	$arVideoIDs = array();
+	foreach ($GLOBALS['featured'] as $sCode)
+	{
+		array_push ($arVideoIDs, CodeToID ($sCode));
+	}
+
+	print ('<div id="featured">');
+	print ('<h3 style="display:inline-block;">Featured Content</h3>');
+	print ('&nbsp;(<a href="/patronage/">info</a>)<br>');
+
+	if (count ($arVideoIDs) != 0)
+	{
+		$arFilters = array ('threshold' => '0', 'nsfw' => '3');
+		$arData = Videos (
+			'featured',
+			'index',
+			" AND (video_id IN (" . implode (',', $arVideoIDs) . "))",
+			'datedesc',
+			0,
+			0,
+			'',
+			'',
+			'',
+			0,
+			TRUE,
+			$arFilters
+		);
+		print ($arData['html']);
+	} else {
+		print ('<p style="font-style:italic;">No featured content.</p>');
+	}
+
+	print ('</div>');
 }
 /*****************************************************************************/
 

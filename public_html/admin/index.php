@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -243,10 +243,33 @@ function StatsSettings ()
 		$sAdmins . ' | ' . $sMods . '</span>';
 	print ($sRights);
 
-	$iHomeSize = disk_free_space ($GLOBALS['home']);
-	$sHomeSize = '<span style="display:block;">' . $GLOBALS['home'] . ' = ' .
-		GetSizeHuman ($iHomeSize) . ' free space</span>';
-	print ($sHomeSize);
+	$arPaths = array();
+	array_push ($arPaths, dirname (__FILE__, 2));
+	foreach ($GLOBALS['additional_storage_paths'] as $sPath)
+		{ array_push ($arPaths, $sPath); }
+	foreach ($arPaths as $sPath)
+	{
+		if (file_exists ($sPath) !== FALSE)
+		{
+			$iHomeSize = disk_free_space ($sPath);
+
+			/*** $sHomeSize ***/
+			$sHomeSize = '';
+			$sHomeSize .= '<span style="display:block;">';
+			$sHomeSize .= $sPath . ' = ' . GetSizeHuman ($iHomeSize) . ' free space';
+			if ($iHomeSize < GetSizeBytes ($GLOBALS['warning_path_free_under']))
+			{
+				$sHomeSize .= ' <span style="color:#f00; font-weight:bold;">';
+				$sHomeSize .= '&lt; ' . $GLOBALS['warning_path_free_under'];
+				$sHomeSize .= '</span>';
+			}
+			$sHomeSize .= '</span>';
+		} else {
+			$sHomeSize = '<span style="display:block; color:#f00;">' .
+				$sPath . '</span>';
+		}
+		print ($sHomeSize);
+	}
 
 	/*** active users ***/
 	$query_users = "SELECT
@@ -375,6 +398,20 @@ function StatsSettings ()
 	print ('</div>');
 }
 /*****************************************************************************/
+function MySQLPHP ()
+/*****************************************************************************/
+{
+	print ('<div class="admin-div">');
+	print ('MySQL version: ' . mysqli_get_server_info
+		($GLOBALS['link']) . '<br>');
+	print ('PHP version: ' . phpversion() . '<br>');
+	print ('max_execution_time = ' . ini_get ('max_execution_time') .
+		' (apache2.conf or httpd.conf also sets a Timeout)' . '<br>');
+	print ('memory_limit = ' . ini_get ('memory_limit') . '<br>');
+	print ('max_input_time = ' . ini_get ('max_input_time'));
+	print ('</div>');
+}
+/*****************************************************************************/
 function UTF8MB4 ()
 /*****************************************************************************/
 {
@@ -456,6 +493,7 @@ function Accounts ()
 			user_warnings_video,
 			user_warnings_comment,
 			user_warnings_avatar,
+			user_warnings_mbpost,
 			user_deleted,
 			user_regdt
 		FROM `fst_user`
@@ -473,6 +511,7 @@ function Accounts ()
 			$iWarnVideo = $row_accounts['user_warnings_video'];
 			$iWarnComment = $row_accounts['user_warnings_comment'];
 			$iWarnAvatar = $row_accounts['user_warnings_avatar'];
+			$iWarnMBPost = $row_accounts['user_warnings_mbpost'];
 			$iUserDeleted = $row_accounts['user_deleted'];
 			$sRegDT = $row_accounts['user_regdt'];
 			$sRegDate = date ('j F Y (H:i)', strtotime ($sRegDT));
@@ -481,7 +520,8 @@ function Accounts ()
 				'</a> (' . $sEmail . ') - ' . $sRegDate . ' - Warnings: ' .
 				WarningCount ($iWarnVideo) . ' video(s)/text(s), ' .
 				WarningCount ($iWarnComment) . ' comment(s), ' .
-				WarningCount ($iWarnAvatar) . ' avatar(s)');
+				WarningCount ($iWarnAvatar) . ' avatar(s), ' .
+				WarningCount ($iWarnMBPost) . ' post(s)');
 			if ($iUserDeleted != 0)
 				{ print (' <span style="color:#00f;">deleted</span>'); }
 			$iRow++;
@@ -523,6 +563,45 @@ function Subscriptions ()
 
 			print ($sSubscriber . ' subscribed to ' .
 				$sChannel . ' - ' . $sAddedDate);
+			$iRow++;
+			if ($iRow != $iRows) { print ('<br>'); }
+		}
+	} else {
+		print ('<span style="font-style:italic;">(none)</span>');
+	}
+	print ('</div>');
+}
+/*****************************************************************************/
+function Following ()
+/*****************************************************************************/
+{
+	print ('<div class="admin-div">');
+	print ('<span style="display:block; font-style:italic;">Recent following (limit 10):</span>');
+	$query_fol = "SELECT
+			fu1.user_username AS microblog,
+			fu2.user_username AS follower,
+			ff.follow_adddate
+		FROM `fst_follow` ff
+		LEFT JOIN `fst_user` fu1
+			ON ff.user_id_microblog = fu1.user_id
+		LEFT JOIN `fst_user` fu2
+			ON ff.user_id_follower = fu2.user_id
+		ORDER BY follow_adddate DESC
+		LIMIT 10";
+	$result_fol = Query ($query_fol);
+	$iRows = mysqli_num_rows ($result_fol);
+	if ($iRows != 0)
+	{
+		$iRow = 0;
+		while ($row_fol = mysqli_fetch_assoc ($result_fol))
+		{
+			$sMicroblog = $row_fol['microblog'];
+			$sFollower = $row_fol['follower'];
+			$sAddedDT = $row_fol['follow_adddate'];
+			$sAddedDate = date ('j F Y (H:i)', strtotime ($sAddedDT));
+
+			print ($sFollower . ' follows ' .
+				$sMicroblog . ' - ' . $sAddedDate);
 			$iRow++;
 			if ($iRow != $iRows) { print ('<br>'); }
 		}
@@ -1182,14 +1261,15 @@ function CustomizedSizes ()
 /*****************************************************************************/
 {
 	print ('<div class="admin-div">');
-	print ('<span style="display:block; font-style:italic;">Customized sizes:</span>');
+	print ('<span style="display:block; font-style:italic;">Customized sizes (limit 10):</span>');
 	$query_custom = "SELECT
 			user_username,
 			user_pref_cwidth,
 			user_pref_tsize
 		FROM `fst_user`
 		WHERE (user_pref_cwidth <> 0) || (user_pref_tsize <> 80)
-		ORDER BY user_username";
+		ORDER BY user_regdt DESC
+		LIMIT 10";
 	$result_custom = Query ($query_custom);
 	$iRows = mysqli_num_rows ($result_custom);
 	if ($iRows != 0)
@@ -1543,10 +1623,12 @@ if (!IsAdmin())
 		CreateNotification();
 		DisallowTorLogin();
 		IPv6();
+		MySQLPHP();
 		UTF8MB4();
 		Banned();
 		Accounts();
 		Subscriptions();
+		Following();
 		Searches();
 		SearchesTop();
 		Comments();

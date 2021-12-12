@@ -7,7 +7,7 @@
 
 ===[1 - ABOUT]=================================================================
 
-FSTube v1.3 (September 2021)
+FSTube v1.4 (December 2021)
 Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
 
 A free and open-source video sharing content management system.
@@ -108,6 +108,9 @@ PHP QR Code 1.1.4: LGPL3
 * Polls can be attached to forum topics.
 * Support for spherical videos (with Video.js).
 * Highlighting of unread topics and comments/replies.
+* Twitter-like microblogging on user pages, including likes, reblogs, following and timeline, hashtags and hashflags, status pages, and explore (search).
+* Featured content.
+* Trending page, based on daily top 10 logs.
 
 ===[4 - INSTALLATION AND SET UP]===============================================
 
@@ -126,7 +129,7 @@ Requirements
 --------------------
 * Apache HTTP Server 2
 * MySQL/MariaDB
-* PHP 7
+* PHP 8 (or 7)
 * FFmpeg (ffmpeg + ffprobe)
 * The ability to set up and run cronjobs.
 * An SMTP account, preferably with an accurate SPF-record.
@@ -141,7 +144,7 @@ The assumption is that FSTube will be installed in the root of your domain. Runn
 You must have a non-public directory (such as private/) on the same level as your website directory (such as public_html/ or www/). Virtually all accounts have this nowadays. If your account does not, (ask your webmaster to) create one.
 
 First, check if any addendums have been issued for this text:
-https://www.fstube.org/addendums/1.3/
+https://www.fstube.org/addendums/1.4/
 
 Add
 character-set-server=utf8mb4
@@ -157,12 +160,14 @@ Then use FSTube.sql to create all MySQL tables.
 Enable various Apache and PHP extensions:
 $ sudo a2enmod rewrite
 $ sudo a2enmod headers
+$ sudo apt install php-mysql
 $ sudo apt install php-mbstring
 $ sudo apt install php-gd
+$ sudo apt install php-cli
 $ sudo service apache2 restart
 
 Modify various PHP settings:
-$ sudo vim /etc/php/7.x/apache2/php.ini
+$ sudo vim /etc/php/8.x/apache2/php.ini
 file_uploads = On
 max_execution_time = 1500
 max_input_time = 60
@@ -192,6 +197,7 @@ Modify HTML text:
 * public_html/privacy/privacy.html
 * public_html/mod/guidelines.html
 * public_html/404.html
+* public_html/patronage/patronage.html
 
 Modify images:
 * All images in the directory public_html/images/favicons/

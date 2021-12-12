@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -55,6 +55,11 @@ function Found ($sUser, $row_user)
 	$sInfo = $row_user['user_information'];
 	$sRegDate = date ('j F Y', strtotime ($row_user['user_regdt']));
 
+	/*** $iVisitorID ***/
+	if (isset ($_SESSION['fst']['user_id']))
+		{ $iVisitorID = $_SESSION['fst']['user_id']; }
+			else { $iVisitorID = 0; }
+
 	$arData['video_id'] = 0;
 	$arData['user_id'] = $iUserID;
 	HTMLStart ($sUser, '', '', $arData, FALSE);
@@ -67,46 +72,49 @@ function Found ($sUser, $row_user)
 			Sanitize ($sRegIP) . '</div>');
 	}
 
-print ('
-<div class="container-fluid" style="padding:0;">
-<div class="row" style="margin:0;">
+	/*** Avatar and profile information. ***/
+	print ('<div style="float:left; width:202px;">');
+	print (GetUserAvatar ($sUser, 'large', 1));
+	print ('</div>');
+	print ('<div style="float:left; width:calc(100% - 222px);' .
+		' margin-left:20px;">');
+	print ('<div id="user-info">' . nl2br (Sanitize ($sInfo)) . '</div>');
+	print ('</div>');
+	print ('<div style="clear:both;"></div>');
 
-<div class="col-lg-3" style="padding:0;">
-<div style="margin-bottom:10px;">
-' . GetUserAvatar ($sUser, 'large', 1) . '
-<div>Registered: ' . $sRegDate . '</div>
-<div id="report">
+	print ('<div style="float:left; margin-top:10px;">');
+	print ('Registered: ' . $sRegDate . '<br>');
+print ('
 <a target="_blank" href="/contact.php?user=' . $sUser . '">
 <img src="/images/reported_off.png" title="report user" alt="reported off">
-</a>
-<a target="_blank" href="/xml/feed.php?user=' . $sUser . '">
-<img src="/images/icon_rss.png" title="RSS" alt="RSS">
 </a>
 <a target="_blank" href="/request/' . $sUser . '/1">
 <img src="/images/icon_email.png" title="request email address" alt="request email address">
 </a>
-<a target="_blank" href="/search/?user=' . Sanitize ($sUser) . '">
-<img src="/images/icon_asearch.png" title="advanced search" alt="advanced search">
-</a>
-</div>
-</div>
-</div>
-
-<div class="col-lg-9" style="padding:0;">
-<div style="margin-bottom:10px;">
 ');
-	if ($sInfo != '')
-	{
-		print ('<div id="user-info">' . nl2br (Sanitize ($sInfo)) . '</div>');
-	}
+	Patronage ($sUser);
+	print ('</div>');
+
+	print ('<div style="float:right; margin-top:10px;">');
 	Subscribe ($iUserID);
+	Follow ($iUserID);
+	if (isset ($_SESSION['fst']['user_id']))
+	{
 print ('
-</div>
-</div>
-
-</div>
-</div>
+<span style="display:block; text-align:right; font-size:12px;">
+(<a href="/faq/#Q2">What is subscribe / follow?</a>)
+</span>
 ');
+	}
+	print ('</div>');
+
+	print ('<div style="clear:both;"></div>');
+
+	print ('<hr class="fst-hr" style="margin:10px 0;">');
+
+	MicroBlog ($iUserID, $iVisitorID);
+
+	print ('<hr class="fst-hr" style="margin:10px 0;">');
 
 /*** $iNSFW (and nsfw-div) ***/
 $query_nsfw = "SELECT
@@ -144,7 +152,7 @@ $row_count = mysqli_fetch_assoc ($result_count);
 if ($row_count['amount'] > 0)
 {
 print ('
-<div style="margin-bottom:10px;">
+<div style="float:left;">
 <select id="sort">
 <option value="datedesc">newest</option>
 <option value="dateasc">oldest</option>
@@ -170,6 +178,19 @@ $("#sort").change(function(){
 </script>
 ');
 }
+
+print ('
+<div style="float:right;">
+<a target="_blank" href="/xml/feed.php?user=' . $sUser . '">
+<img src="/images/icon_rss.png" title="RSS" alt="RSS">
+</a>
+<a target="_blank" href="/search/?user=' . Sanitize ($sUser) . '">
+<img src="/images/icon_asearch.png" title="advanced search" alt="advanced search">
+</a>
+</div>
+
+<div style="clear:both; margin-bottom:10px;"></div>
+');
 
 print ('
 <div id="videos"><img src="/images/loading.gif" alt="loading"></div>
@@ -212,7 +233,6 @@ $(document).ready(function(){ VideosJS ("videos", "user", "datedesc", 0, "' . Sa
 function Subscribe ($iUserIDChannel)
 /*****************************************************************************/
 {
-	print ('<div style="margin-top:10px; text-align:right;">');
 	if (!isset ($_SESSION['fst']['user_id']))
 	{
 		$bSubscribed = FALSE;
@@ -234,10 +254,6 @@ function Subscribe ($iUserIDChannel)
 	if ($bSubscribed === TRUE) { print ('d'); }
 	print ('.png" alt="subscribe" style="cursor:pointer;">');
 	print ('<div id="subscribe-error" style="color:#f00; margin-top:10px;"></div>');
-	if (isset ($_SESSION['fst']['user_id']))
-	{
-		print ('<span style="display:block; font-size:12px;">(<a href="/faq/#Q2">What is this?</a>)</span>');
-	}
 
 print ('
 <script>
@@ -268,7 +284,209 @@ $("#subscribe").click(function(){
 });
 </script>
 ');
+}
+/*****************************************************************************/
+function Follow ($iUserIDMicroBlog)
+/*****************************************************************************/
+{
+	if (!isset ($_SESSION['fst']['user_id']))
+	{
+		$bFollowing = FALSE;
+	} else {
+		$query_following = "SELECT
+				follow_id
+			FROM `fst_follow`
+			WHERE (user_id_microblog='" . $iUserIDMicroBlog . "')
+			AND (user_id_follower='" . $_SESSION['fst']['user_id'] . "')";
+		$result_following = Query ($query_following);
+		if (mysqli_num_rows ($result_following) == 1)
+		{
+			$bFollowing = TRUE;
+		} else {
+			$bFollowing = FALSE;
+		}
+	}
+	print ('<img id="follow" src="/images/follow');
+	if ($bFollowing === TRUE) { print ('ing'); }
+	print ('.png" alt="follow" style="cursor:pointer;">');
+	print ('<div id="follow-error" style="color:#f00; margin-top:10px;"></div>');
 
+print ('
+<script>
+$("#follow").click(function(){
+	$.ajax({
+		type: "POST",
+		url: "/user/follow.php",
+		data: ({
+			user_id_microblog : "' . $iUserIDMicroBlog . '",
+			csrf_token : "' . $_SESSION['fst']['csrf_token'] . '"
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			var html = data["html"];
+			if (result == 1)
+			{
+				$("#follow").attr("src",html);
+			} else {
+				$("#follow-error").html(error);
+			}
+		},
+		error: function() {
+			$("#follow-error").html("Error calling follow.php.");
+		}
+	});
+});
+</script>
+');
+}
+/*****************************************************************************/
+function MicroBlog ($iUserID, $iVisitorID)
+/*****************************************************************************/
+{
+	print ('<div id="microblog">');
+
+	print (MicroBlogIcons (2));
+
+	if ($iUserID == $iVisitorID)
+	{
+		if (IsMod())
+		{
+			print ('<p>Not as a mod.</p>');
+		} else {
+print ('
+<span style="display:block; margin-bottom:10px;">
+The <a href="/terms/">Terms of service</a> apply. Happy microblogging!
+</span>
+');
+
+			$sPlaceholder = '';
+			$sButtonValue = 'Post';
+
+			/*** Reblog. ***/
+			print ('<div id="reblog-div">');
+			if ((isset ($_GET['rbuser'])) &&
+				(isset ($_GET['rbpost'])))
+			{
+				$sUsername = $_GET['rbuser'];
+				$iPostID = intval ($_GET['rbpost']);
+				if (MBPostExists ($sUsername, $iPostID) !== FALSE)
+				{
+					if (HasReblogged ($iVisitorID, $iPostID) === FALSE)
+					{
+						print (GetMBPost ($iPostID, $iVisitorID, TRUE, 0));
+						print ('<input id="reblog-data" type="hidden" data-rbuser="' .
+							Sanitize ($sUsername) . '" data-rbpost="' . $iPostID . '">');
+						print ('<p><a href="/user/' .
+							$_SESSION['fst']['user_username'] . '#microblog">' .
+							'Cancel reblog</a> or press Reblog.</p>');
+						/***/
+						$sPlaceholder = 'Optional reblog comment.';
+						$sButtonValue = 'Reblog';
+					} else {
+						print ('<p style="color:#f00;">Already reblogged by you.</p>');
+					}
+				} else {
+					print ('<p style="color:#f00;">Cannot reblog unknown' .
+						' microblog post.</p>');
+				}
+			}
+			print ('</div>');
+
+print ('
+<textarea id="mbpost_text" style="display:block; width:600px; max-width:100%;" placeholder="' . $sPlaceholder . '"></textarea>
+<div id="microblog-error" style="color:#f00; margin-top:10px;"></div>
+<input id="mbpost_add" type="button" value="' . $sButtonValue . '" style="margin-bottom:10px;">
+
+<script>
+$("#mbpost_add").click(function(){
+	$("#mbpost_add").prop("value","Wait...");
+	$("#mbpost_add").prop("disabled",true).css("opacity","0.5");
+	var rbuser = $("#reblog-data").data("rbuser");
+	if (typeof (rbuser) === "undefined") { rbuser = ""; }
+	var rbpost = $("#reblog-data").data("rbpost");
+	if (typeof (rbpost) === "undefined") { rbpost = ""; }
+	var mbpost_text = $("#mbpost_text").val();
+	/***/
+	if ((rbuser == "") || (rbpost == ""))
+		{ var button = "Post"; } else { var button = "Reblog"; }
+
+	$.ajax({
+		type: "POST",
+		url: "/user/mbpost_add.php",
+		data: ({
+			rbuser : rbuser,
+			rbpost : rbpost,
+			mbpost_text : mbpost_text,
+			csrf_token : "' . $_SESSION['fst']['csrf_token'] . '"
+		}),
+		dataType: "json",
+		success: function(data) {
+			$("#mbpost_add").prop("value",button);
+			$("#mbpost_add").removeAttr("disabled").css("opacity","1");
+			var result = data["result"];
+			var error = data["error"];
+			if (result == 1)
+			{
+				$("#reblog-div").empty();
+				$("#mbpost_text").val("");
+				$("#mbpost_text").attr("placeholder","");
+				$("#mbpost_add").prop("value","Post");
+				$("#mboffset").val(0);
+				MicroBlogPosts (' . $iUserID . ', 0);
+			} else {
+				$("#microblog-error").html(error);
+			}
+		},
+		error: function() {
+			$("#mbpost_add").prop("value",button);
+			$("#mbpost_add").removeAttr("disabled").css("opacity","1");
+			$("#microblog-error").html("Error calling mbpost_add.php.");
+		}
+	});
+});
+</script>
+');
+		}
+	}
+
+print ('
+<input type="hidden" id="mboffset" value="0">
+<div id="microblogposts-error" style="color:#f00; margin-top:10px;"></div>
+<div id="microblogposts"><img src="/images/loading.gif" alt="loading"></div>
+<div id="microblogposts-more" style="margin-top:10px; text-align:center; display:none;"><span class="more-span">load more</span></div>
+
+<script>
+$(document).ready(function(){
+	$("#mboffset").val(0);
+	MicroBlogPosts (' . $iUserID . ', 0);
+});
+
+$("#microblogposts-more").click(function(){
+	var mboffset = $("#mboffset").val();
+	mboffset = parseInt(mboffset) + 3;
+	$("#mboffset").val(mboffset);
+	MicroBlogPosts (' . $iUserID . ', mboffset);
+});
+</script>
+');
+
+	print ('</div>');
+}
+/*****************************************************************************/
+function Patronage ($sUser)
+/*****************************************************************************/
+{
+	print ('<div style="margin-top:10px;">');
+	foreach ($GLOBALS['patronage'] as $key => $arPatronage)
+	{
+		if ($arPatronage[0] == $sUser)
+		{
+			$iYear = intval ($arPatronage[1]);
+			print (PatronBlock ($iYear));
+		}
+	}
 	print ('</div>');
 }
 /*****************************************************************************/

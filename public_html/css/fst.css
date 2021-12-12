@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -132,9 +132,9 @@ select {
 	display:block;
 	font-weight:normal;
 }
-.likes {
+.likes, .reblogs {
 	display:inline-block;
-	margin-left:5px;
+	margin:0 5px;
 }
 .processing-span {
 	position:absolute;
@@ -258,6 +258,8 @@ select {
 }
 #user-info, #folder-desc {
 	padding:10px;
+	height:202px;
+	overflow-y:auto;
 }
 #search {
 	padding:5px;
@@ -375,6 +377,13 @@ select {
 }
 .activep {}
 .new {}
+#trending-table th, #trending-table td {
+	padding:5px;
+}
+#featured {
+	margin-bottom:10px;
+	padding:10px;
+}
 
 /*** Delete checkbox. ***/
 .chk-delete {
@@ -437,7 +446,7 @@ select {
 @media screen and (min-width:768px) {
 	.scrollable-menu {
 		height:auto;
-		max-height:200px;
+		max-height:250px;
 		overflow-x:hidden;
 	}
 }
@@ -535,4 +544,44 @@ select {
 	font-weight:bold;
 	cursor:pointer;
 	font-size:18px;
+}
+
+/*** Microblog. ***/
+#mbicons {
+	position:fixed;
+	bottom:0;
+	right:0;
+	z-index:2;
+	line-height:1;
+	padding:10px;
+	background-color:#999;
+}
+.mbpost {
+	margin-bottom:10px;
+	padding:5px;
+	padding-left:0;
+	border-width:1px 0;
+	border-style:solid;
+}
+.reblog {
+	padding:5px;
+	margin:5px 0;
+}
+.hashflag {
+	display:inline-block;
+	width:1.2em;
+	height:1.2em;
+	vertical-align:-20%;
+	margin-left:2px;
+	margin-right:0.075em;
+}
+
+/*** Patronage. ***/
+.patronage-div {
+	display:inline-block;
+}
+.patronage-span {
+	display:flex;
+	align-items:center;
+	padding:5px;
 }

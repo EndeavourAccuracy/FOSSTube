@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -352,6 +352,151 @@ function Topics (offset) {
 	});
 }
 
+function TrendingDates (curdate, actyear) {
+	$.ajax({
+		type: "POST",
+		url: "/trending/dates.php",
+		data: ({
+			curdate : curdate,
+			actyear : actyear
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			var html = data["html"];
+			var actdate = data["actdate"];
+			if (result == 1)
+			{
+				$("#trending-date").html(html);
+				Trending (actdate);
+			} else {
+				$("#trending-error").html(error);
+			}
+		},
+		error: function() {
+			$("#trending-error").html("Error calling dates.php.");
+		}
+	});
+}
+
+function Trending (date) {
+	$.ajax({
+		type: "POST",
+		url: "/trending/trending.php",
+		data: ({
+			date : date
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			var html = data["html"];
+			if (result == 1)
+			{
+				$("#trending").html(html);
+			} else {
+				$("#trending-error").html(error);
+			}
+		},
+		error: function() {
+			$("#trending-error").html("Error calling trending.php.");
+		}
+	});
+}
+
+function MicroBlogPosts (user, mboffset) {
+	$.ajax({
+		type: "POST",
+		url: "/timeline/mbposts.php",
+		data: ({
+			user : user,
+			mboffset : mboffset
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			var html = data["html"];
+			var posts = data["posts"];
+			if (result == 1)
+			{
+				if (mboffset == 0)
+				{
+					$("#microblogposts").html(html);
+				} else {
+					$("#microblogposts").append(html);
+				}
+				if (posts == 0)
+				{
+					$("#microblogposts-more").hide();
+				} else {
+					$("#microblogposts-more").show();
+				}
+			} else {
+				$("#microblogposts-error").html(error);
+			}
+		},
+		error: function() {
+			$("#microblogposts-error").html("Error calling mbposts.php.");
+		}
+	});
+}
+
+function HidePost (post_id, csrf_token) {
+	$.ajax({
+		type: "POST",
+		url: "/user/mbpost_hide.php",
+		data: ({
+			post_id : post_id,
+			csrf_token : csrf_token
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			if (result == 1)
+			{
+				var post = "#post-" + post_id;
+				$(post).html("<i>Removed.</i>");
+				$(post).delay(1000).fadeOut(500);
+			} else {
+				alert (error);
+			}
+		},
+		error: function() {
+			alert ("Error calling mbpost_hide.php.");
+		}
+	});
+}
+
+function LikePost (post_id, csrf_token) {
+	$.ajax({
+		type: "POST",
+		url: "/user/mbpost_like.php",
+		data: ({
+			post_id : post_id,
+			csrf_token : csrf_token
+		}),
+		dataType: "json",
+		success: function(data) {
+			var result = data["result"];
+			var error = data["error"];
+			var likes = data["likes"];
+			if (result == 1)
+			{
+				$("#liked-" + post_id).html("<img src=\"/images/liked_on.png\" alt=\"liked on\">");
+				$("#likes-" + post_id).html(likes);
+			} else {
+				alert (error);
+			}
+		},
+		error: function() {
+			alert ("Error calling mbpost_like.php.");
+		}
+	});
+}
+
 $(document).ready(function(){
 	$("[data-name=\"hover\"]").mouseenter(function(){
 		var active = $(this).data("active");
@@ -432,12 +577,12 @@ $(document).ready(function(){
 					if (theme == "day")
 					{
 						$("#theme").data("theme","day");
-						$("#theme").attr("href","/css/fst_day.css?v=22");
+						$("#theme").attr("href","/css/fst_day.css?v=24");
 						$("#switch-img").attr("alt","night");
 						$("#switch-img").attr("src","/images/theme/night.png");
 					} else {
 						$("#theme").data("theme","night");
-						$("#theme").attr("href","/css/fst_night.css?v=22");
+						$("#theme").attr("href","/css/fst_night.css?v=24");
 						$("#switch-img").attr("alt","day");
 						$("#switch-img").attr("src","/images/theme/day.png");
 					}
@@ -471,4 +616,12 @@ $(document).ready(function(){
 			});
 		}
 	});
+
+	if (window.location.hash)
+	{
+		var hash = window.location.hash;
+		$('html, body').animate({
+			scrollTop: $(hash).offset().top
+		}, 500);
+	}
 });

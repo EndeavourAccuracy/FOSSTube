@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -76,9 +76,18 @@ function ShowVideo ($sCode)
 {
 	$arVideo = VideoExists ($sCode);
 
+	if ($arVideo !== FALSE)
+	{
+		$sTitle = $arVideo['title'];
+		$sThumbURL = ThumbURL ($sCode, '180', $arVideo['thumbnail'], TRUE);
+	} else {
+		$sTitle = '(deleted)';
+		$sThumbURL = '/images/thumbnail_180.jpg';
+	}
+
 print ('
 <span style="display:block; margin-bottom:10px; padding:5px; background-color:#ddd;">
-<h2>' . Sanitize ($arVideo['title']) . '</h2>
+<h2>' . Sanitize ($sTitle) . '</h2>
 
 <span style="display:inline-block; border:1px solid #000; max-width:100%;">
 <video style="display:block; max-width:100%;" autoplay loop>
@@ -88,7 +97,7 @@ Your browser or OS does not support HTML5 MP4 video with H.264.
 </span>
 
 <span style="display:inline-block; vertical-align:top; border:1px solid #000; max-width:100%;">
-<img src="' . ThumbURL ($sCode, '180', $arVideo['thumbnail'], TRUE) . '" alt="preview" style="max-width:100%;">
+<img src="' . $sThumbURL . '" alt="preview" style="max-width:100%;">
 </span>
 
 </span>
@@ -147,6 +156,24 @@ print ('
 ' . nl2br (Sanitize ($sComment)) . '
 </span>
 <a target="_blank" href="/v/' . $sCode . '/' . $iCommentID . '#comment-' . $iCommentID . '">open comment in tab</a>
+');
+}
+/*****************************************************************************/
+function ShowMBPost ($iPostID)
+/*****************************************************************************/
+{
+	$query_post = "SELECT
+			mbpost_text
+		FROM `fst_microblog_post`
+		WHERE (mbpost_id='" . $iPostID . "')";
+	$result_post = Query ($query_post);
+	$row_post = mysqli_fetch_assoc ($result_post);
+	$sPost = $row_post['mbpost_text'];
+
+print ('
+<span style="display:block; margin-bottom:10px; padding:5px; background-color:#ddd;">
+' . nl2br (Sanitize ($sPost)) . '
+</span>
 ');
 }
 /*****************************************************************************/
@@ -229,7 +256,8 @@ function ShowWarnings ($iUserID)
 			user_username,
 			user_warnings_video,
 			user_warnings_comment,
-			user_warnings_avatar
+			user_warnings_avatar,
+			user_warnings_mbpost
 		FROM `fst_user`
 		WHERE (user_id='" . $iUserID . "')";
 	$result_warn = Query ($query_warn);
@@ -238,10 +266,11 @@ function ShowWarnings ($iUserID)
 	$iWarnVideo = $row_warn['user_warnings_video'];
 	$iWarnComment = $row_warn['user_warnings_comment'];
 	$iWarnAvatar = $row_warn['user_warnings_avatar'];
+	$iWarnMBPost = $row_warn['user_warnings_mbpost'];
 
 print ('
 <span style="display:block; margin-bottom:10px;">
-Past warnings user "' . $sUsername . '": ' . WarningCount ($iWarnVideo) . ' video(s)/text(s), ' . WarningCount ($iWarnComment) . ' comment(s), ' . WarningCount ($iWarnAvatar) . ' avatar(s)
+Past warnings user "' . $sUsername . '": ' . WarningCount ($iWarnVideo) . ' video(s)/text(s), ' . WarningCount ($iWarnComment) . ' comment(s), ' . WarningCount ($iWarnAvatar) . ' avatar(s), ' . WarningCount ($iWarnMBPost) . ' post(s)
 </span>
 ');
 }
@@ -269,7 +298,7 @@ function ActionText ($iReportType, $iAction, $iIsText)
 			case 6: $sText =
 				'Delete ' . $sContent . ' + email USER a warning'; break;
 			case 9: $sText =
-				'Ban this USER + delete all their content/comments'; break;
+				'Ban this USER + delete all their content/comments/posts'; break;
 			case 11: $sText =
 				'Remove custom thumbnail'; break;
 			case 12: $sText =
@@ -294,7 +323,7 @@ function ActionText ($iReportType, $iAction, $iIsText)
 			case 6: $sText =
 				'Delete comment + email USER a warning'; break;
 			case 9: $sText =
-				'Ban this USER + delete all their content/comments'; break;
+				'Ban this USER + delete all their content/comments/posts'; break;
 		}
 	}
 
@@ -313,7 +342,7 @@ function ActionText ($iReportType, $iAction, $iIsText)
 			case 8: $sText =
 				'Delete USER avatar and profile text + email USER a warning'; break;
 			case 9: $sText =
-				'Ban this USER + delete all their content/comments'; break;
+				'Ban this USER + delete all their content/comments/posts'; break;
 		}
 	}
 
@@ -329,6 +358,27 @@ function ActionText ($iReportType, $iAction, $iIsText)
 				'No action is necessary + ban this SENDER'; break;
 			case 10: $sText =
 				'Email this feedback to the admin(s).'; break;
+		}
+	}
+
+	if ($iReportType == 5) /*** mbpost ***/
+	{
+		switch ($iAction)
+		{
+			case 1: $sText =
+				'No action is necessary'; break;
+			case 2: $sText =
+				'No action is necessary + email REPORTER a warning'; break;
+			case 3: $sText =
+				'No action is necessary + ban this REPORTER'; break;
+			case 4: $sText =
+				'Hide post + request admin input'; break;
+			case 5: $sText =
+				'Delete post'; break;
+			case 6: $sText =
+				'Delete post + email USER a warning'; break;
+			case 9: $sText =
+				'Ban this USER + delete all their content/comments/posts'; break;
 		}
 	}
 
@@ -398,6 +448,19 @@ print ('
 ');
 }
 
+if ($iReportType == 5) /*** mbpost ***/
+{
+print ('
+<option value="1">' . ActionText ($iReportType, 1, $iIsText) . '</option>
+<option value="2">' . ActionText ($iReportType, 2, $iIsText) . '</option>
+<option value="3">' . ActionText ($iReportType, 3, $iIsText) . '</option>
+<option value="4">' . ActionText ($iReportType, 4, $iIsText) . '</option>
+<option value="5">' . ActionText ($iReportType, 5, $iIsText) . '</option>
+<option value="6">' . ActionText ($iReportType, 6, $iIsText) . '</option>
+<option value="9">' . ActionText ($iReportType, 9, $iIsText) . '</option>
+');
+}
+
 	print ('</select>');
 	print ('<input name="button-' . $iReportID . '" type="button" value="Submit" style="border:1px solid #000; padding:5px;">');
 }
@@ -430,6 +493,7 @@ function ShowPreviouslyPickedActions ($row_report, $iIsText)
 		AND (issue_id='" . $row_report['issue_id'] . "')
 		AND (video_id='" . $row_report['video_id'] . "')
 		AND (comment_id='" . $row_report['comment_id'] . "')
+		AND (mbpost_id='" . $row_report['mbpost_id'] . "')
 		AND (user_id='" . $row_report['user_id'] . "')
 		AND (report_action<>'0')
 		GROUP BY report_action";
@@ -482,6 +546,7 @@ print ('
 			report_occursattime,
 			video_id,
 			comment_id,
+			mbpost_id,
 			user_id,
 			message,
 			report_email,
@@ -621,6 +686,32 @@ This user has already been deleted.
 					ShowReporter ($sReportIP, $sReportEmail);
 					ShowIssue ($row_report['issue_id']);
 					ShowFeedback ($row_report['message']);
+					break;
+				case 5: /*** mbpost ***/
+					print ('<h2 title="#' . $iReportID . '">Report: post</h2>');
+					ShowDate ($row_report['report_dt']);
+					ShowReporter ($sReportIP, $sReportEmail);
+					ShowIssue ($row_report['issue_id']);
+					ShowMBPost ($row_report['mbpost_id']);
+					ShowWarnings ($row_report['user_id']);
+					/***/
+					$query_del = "SELECT
+							mbpost_hidden
+						FROM `fst_microblog_post`
+						WHERE (mbpost_id='" . $row_report['mbpost_id'] . "')";
+					$result_del = Query ($query_del);
+					$row_del = mysqli_fetch_assoc ($result_del);
+					if ($row_del['mbpost_hidden'] != 0)
+					{
+print ('
+<span style="display:block; margin-bottom:10px; color:#00f; font-size:16px;">
+This post has already been deleted.
+<br>
+If necessary, you may still "Delete post + email USER a warning".
+</span>
+');
+					}
+					/***/
 					break;
 			}
 			if ($iReportAction == 0)

@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -127,6 +127,7 @@ ShowLi ('/', 'Home');
 /*** About ***/
 MenuStart ('About');
 ShowLi ('/about/', 'About');
+ShowLi ('/patronage/', 'Patronage');
 if (isset ($_SESSION['fst']['user_id'])) { ShowLi ('/faq/', 'FAQ'); }
 print ('<li role="separator" class="divider"></li>');
 ShowLi ('/terms/', 'Terms of service');
@@ -151,6 +152,7 @@ if (isset ($_SESSION['fst']['user_id']))
 		ShowLi ('/text/', 'Text');
 	}
 	ShowLi ('/folders/', 'Folders');
+	ShowLi ('/timeline/', 'Timeline');
 	ShowLi ('/account/', 'Account');
 	print ('<li role="separator" class="divider"></li>');
 	ShowLi ('/signout/', 'Sign out');
@@ -352,21 +354,21 @@ print ('
 <![endif]-->
 <script src="/js/wNumb.min.js"></script>
 <script src="/js/nouislider.min.js"></script>
-<script src="/js/fst.js?v=40"></script>
+<script src="/js/fst.js?v=44"></script>
 
 <!-- CSS -->
 <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="/css/nouislider.min.css">
-<link rel="stylesheet" type="text/css" href="/css/fst.css?v=45">
+<link rel="stylesheet" type="text/css" href="/css/fst.css?v=47">
 ');
 
 if (!isset ($_SESSION['fst']['theme']))
 	{ $_SESSION['fst']['theme'] = $GLOBALS['default_theme']; }
 if ($_SESSION['fst']['theme'] == 'day')
 {
-	print ('<link rel="stylesheet" type="text/css" href="/css/fst_day.css?v=22" id="theme" data-theme="day">' . "\n");
+	print ('<link rel="stylesheet" type="text/css" href="/css/fst_day.css?v=24" id="theme" data-theme="day">' . "\n");
 } else {
-	print ('<link rel="stylesheet" type="text/css" href="/css/fst_night.css?v=22" id="theme" data-theme="night">' . "\n");
+	print ('<link rel="stylesheet" type="text/css" href="/css/fst_night.css?v=24" id="theme" data-theme="night">' . "\n");
 }
 
 print ('
@@ -419,9 +421,27 @@ print ('
 	}
 }
 /*****************************************************************************/
+function GetActiveURL ()
+/*****************************************************************************/
+{
+	/*** This function does not urlencode(). ***/
+
+	$sURL = '';
+	$sURL .= $GLOBALS['protocol'];
+	$sURL .= '://';
+	$sURL .= $_SERVER['HTTP_HOST'];
+	$sURL .= $_SERVER['REQUEST_URI'];
+
+	return ($sURL);
+}
+/*****************************************************************************/
 function HTMLEnd ()
 /*****************************************************************************/
 {
+	/* For the validator, do NOT use "/check?uri=referer", because proxies
+	 * may strip out the referrer header.
+	 */
+
 print ('
 </div>
 </div>
@@ -429,7 +449,7 @@ print ('
 <div id="footer">
 &copy; ' . date ('Y') . ' ' . $GLOBALS['name_copyright'] . '
 &nbsp;|&nbsp;
-<a target="_blank" href="https://validator.w3.org/check?uri=referer"><img src="/images/W3C_HTML5.png" alt="W3C HTML5"></a>
+<a target="_blank" href="https://validator.w3.org/nu/?doc=' . urlencode (GetActiveURL()) . '"><img src="/images/W3C_HTML5.png" alt="W3C HTML5"></a>
 </div>
 
 </div>
@@ -895,7 +915,7 @@ function LikesVideo ($iVideoID)
 		WHERE (video_id='" . $iVideoID . "')";
 	$result_likes = Query ($query_likes);
 	$row_likes = mysqli_fetch_assoc ($result_likes);
-	$iLikes = $row_likes['likes'];
+	$iLikes = intval ($row_likes['likes']);
 
 	return ($iLikes);
 }
@@ -909,9 +929,46 @@ function LikesComment ($iCommentID)
 		WHERE (comment_id='" . $iCommentID . "')";
 	$result_likes = Query ($query_likes);
 	$row_likes = mysqli_fetch_assoc ($result_likes);
-	$iLikes = $row_likes['likes'];
+	$iLikes = intval ($row_likes['likes']);
 
 	return ($iLikes);
+}
+/*****************************************************************************/
+function LikesMBPost ($iPostID)
+/*****************************************************************************/
+{
+	/* This function works, but is deprecated.
+	 * Wherever possible, use mbpost_likes instead.
+	 */
+
+	$query_likes = "SELECT
+			COUNT(*) AS likes
+		FROM `fst_likembpost`
+		WHERE (mbpost_id='" . $iPostID . "')";
+	$result_likes = Query ($query_likes);
+	$row_likes = mysqli_fetch_assoc ($result_likes);
+	$iLikes = intval ($row_likes['likes']);
+
+	return ($iLikes);
+}
+/*****************************************************************************/
+function ReblogsMBPost ($iPostID)
+/*****************************************************************************/
+{
+	/* This function works, but is deprecated.
+	 * Wherever possible, use mbpost_reblogs instead.
+	 */
+
+	$query_reblogs = "SELECT
+			COUNT(*) AS reblogs
+		FROM `fst_microblog_post`
+		WHERE (mbpost_id_reblog='" . $iPostID . "')
+		AND (mbpost_hidden='0')";
+	$result_reblogs = Query ($query_reblogs);
+	$row_reblogs = mysqli_fetch_assoc ($result_reblogs);
+	$iReblogs = intval ($row_reblogs['reblogs']);
+
+	return ($iReblogs);
 }
 /*****************************************************************************/
 function VideoExists ($sCode)
@@ -975,6 +1032,39 @@ function CommentExists ($iCommentID, $iVideoID)
 	}
 
 	return ($arComment);
+}
+/*****************************************************************************/
+function MBPostExists ($sUsername, $iPostID)
+/*****************************************************************************/
+{
+	/* Returns an array or FALSE.
+	 * Hidden posts also return FALSE.
+	 */
+
+	$iID = intval ($iPostID);
+	$query_post = "SELECT
+			fm.mbpost_id,
+			fm.user_id,
+			fm.mbpost_text
+		FROM `fst_microblog_post` fm
+		LEFT JOIN `fst_user` fu
+			ON fm.user_id = fu.user_id
+		WHERE (fm.mbpost_id='" . $iID . "')
+		AND (fu.user_username='" . mysqli_real_escape_string
+			($GLOBALS['link'], $sUsername) . "')
+		AND (fm.mbpost_hidden='0')";
+	$result_post = Query ($query_post);
+	if (mysqli_num_rows ($result_post) == 1)
+	{
+		$row_post = mysqli_fetch_assoc ($result_post);
+		$arPost['id'] = intval ($row_post['mbpost_id']);
+		$arPost['user_id'] = intval ($row_post['user_id']);
+		$arPost['text'] = $row_post['mbpost_text'];
+	} else {
+		$arPost = FALSE;
+	}
+
+	return ($arPost);
 }
 /*****************************************************************************/
 function UserExists ($sUsername)
@@ -1702,6 +1792,47 @@ function Times ($sString)
 	}
 
 	return ($sString);
+}
+/*****************************************************************************/
+function HashTags ($sString)
+/*****************************************************************************/
+{
+	preg_match_all ('/(?<!&)(#\w+)/', $sString, $arMatches);
+	$arMatchesU = array_unique ($arMatches[0]);
+	foreach ($arMatchesU as $sMatchU)
+	{
+		$sReplace = '<a href="/explore/?phrase=' .
+			urlencode (HashFlag ($sMatchU, FALSE)) .
+			'" style="white-space:nowrap;">';
+		$sReplace .= HashFlag ($sMatchU, TRUE);
+		$sReplace .= '</a>';
+
+		$sString = str_replace ($sMatchU, $sReplace, $sString);
+	}
+
+	return ($sString);
+}
+/*****************************************************************************/
+function HashFlag ($sHashTag, $bImage)
+/*****************************************************************************/
+{
+	$sSearch = substr (strtolower ($sHashTag), 1);
+
+	if (isset ($GLOBALS['hashflags'][$sSearch]))
+	{
+		$sText = $GLOBALS['hashflags'][$sSearch];
+	} else {
+		return ($sHashTag);
+	}
+
+	$sHashFlag = '#' . $sText;
+	if ($bImage === TRUE)
+	{
+		$sHashFlag .= ' <img src="/hashflags/' . $sText . '.png" alt="' .
+			$sText . '" class="hashflag">';
+	}
+
+	return ($sHashFlag);
 }
 /*****************************************************************************/
 function NewCommentsGrouped ($sColumn, $iUserID)
@@ -2636,7 +2767,7 @@ function Topics ($iBoard, $iUserID, $iJustNewContent)
 	return ($arTopics);
 }
 /*****************************************************************************/
-function UpdateCountLikes ($iVideoID)
+function UpdateCountLikesVideo ($iVideoID)
 /*****************************************************************************/
 {
 	$query_update = "UPDATE `fst_video` fv SET
@@ -2650,26 +2781,17 @@ function UpdateCountLikes ($iVideoID)
 	Query ($query_update);
 }
 /*****************************************************************************/
-function UpdateCountComments ($iVideoID)
+function UpdateCountLikesMBPost ($iPostID)
 /*****************************************************************************/
 {
-	$query_update = "UPDATE `fst_video` fv SET
-			video_comments=(
+	$query_update = "UPDATE `fst_microblog_post` fm SET
+			mbpost_likes=(
 				SELECT
 					COUNT(*)
-				FROM `fst_comment` fc
-				WHERE (fc.video_id='" . $iVideoID . "')
-				AND (fc.comment_hidden='0')
-				AND (fv.video_comments_allow='1')
-				AND (
-					(fv.video_comments_show='1')
-					OR (
-						(fv.video_comments_show='2')
-						AND (fc.comment_approved='1')
-					)
-				)
+				FROM `fst_likembpost` fl
+				WHERE (fl.mbpost_id='" . $iPostID . "')
 			)
-		WHERE (fv.video_id='" . $iVideoID . "')";
+		WHERE (fm.mbpost_id='" . $iPostID . "')";
 	Query ($query_update);
 }
 /*****************************************************************************/
@@ -2696,6 +2818,407 @@ function FewerNotif ($sUserFrom, $sUserTo)
 	}
 
 	return ($sReturn);
+}
+/*****************************************************************************/
+function HasReblogged ($iUserID, $iPostID)
+/*****************************************************************************/
+{
+	$query_reblogged = "SELECT
+			mbpost_id
+		FROM `fst_microblog_post`
+		WHERE (user_id='" . $iUserID . "')
+		AND (mbpost_id_reblog='" . $iPostID . "')
+		AND (mbpost_hidden='0')";
+	$result_reblogged = Query ($query_reblogged);
+	if (mysqli_num_rows ($result_reblogged) == 1)
+		{ $bReblogged = TRUE; } else { $bReblogged = FALSE; }
+
+	return ($bReblogged);
+}
+/*****************************************************************************/
+function GetMBPostHidden ($iPostID, $bIcon)
+/*****************************************************************************/
+{
+$sHTML = '
+<span id="hidden-' . $iPostID . '">
+<a name="hidden" href="javascript:;" style="display:inline-block;">
+';
+
+	if ($bIcon === TRUE)
+	{
+		$sHTML .=
+			'<img src="/images/hidden_off.png" title="remove" alt="hidden off">';
+	} else {
+		$sHTML .= 'remove reblog';
+	}
+
+$sHTML .= '
+</a>
+</span>
+';
+
+	return ($sHTML);
+}
+/*****************************************************************************/
+function GetMBPostReported ($iPostID, $sUsername)
+/*****************************************************************************/
+{
+$sHTML = '
+<a target="_blank" href="/contact.php?mbuser=' .
+	Sanitize ($sUsername) . '&mbpost=' . $iPostID . '">
+<img src="/images/reported_off.png" title="report" alt="reported off">
+</a>
+';
+
+	return ($sHTML);
+}
+/*****************************************************************************/
+function GetMBPostReblogged ($iPostID, $sUsername, $bReblogged, $iReblogs)
+/*****************************************************************************/
+{
+	if (isset ($_SESSION['fst']['user_username']))
+	{
+		$sURL = '/user/' . $_SESSION['fst']['user_username'] . '?rbuser=' .
+			Sanitize ($sUsername) . '&rbpost=' . $iPostID . '#microblog';
+	} else {
+		$sURL = '/signin/';
+	}
+
+	if ($bReblogged === FALSE)
+	{
+$sHTML = '
+<a href="' . $sURL . '">
+<img src="/images/reblogged_off.png" title="reblog" alt="reblogged off">
+</a>
+';
+	} else {
+		$sHTML = '<img src="/images/reblogged_on.png"' .
+			' title="reblog" alt="reblogged on">';
+	}
+	if ($iReblogs > 0)
+	{
+		$sHTML .= '<span id="reblogs-' . $iPostID . '" class="reblogs">';
+		$sHTML .= $iReblogs;
+		$sHTML .= '</span>';
+	}
+
+	return ($sHTML);
+}
+/*****************************************************************************/
+function GetMBPostLiked ($iPostID, $bAuthor, $bLiked, $iLikes)
+/*****************************************************************************/
+{
+	$sHTML = '';
+
+	if ($bAuthor === FALSE)
+	{
+		if ($bLiked === TRUE)
+		{
+			$sHTML .= ' <img src="/images/liked_on.png" title="like" alt="liked on">';
+		} else {
+$sHTML .= '
+<span id="liked-' . $iPostID . '">
+<a name="liked" href="javascript:;" style="display:inline-block;">
+<img src="/images/liked_off.png" title="like" alt="liked off">
+</a>
+</span>
+';
+		}
+	} else {
+		$sHTML .= ' <img src="/images/liked_off.png" title="like" alt="liked off">';
+	}
+	$sHTML .= '<span id="likes-' . $iPostID .
+		'" class="likes">';
+	if ($iLikes > 0) { $sHTML .= $iLikes; }
+	$sHTML .= '</span>';
+
+	return ($sHTML);
+}
+/*****************************************************************************/
+function GetMBPost ($iPostID, $iVisitorID, $bReblog, $iActions)
+/*****************************************************************************/
+{
+	/*** Returns a microblog post or FALSE (if result not 1 row). ***/
+
+	$query_post = "SELECT
+			fm.user_id,
+			fm.mbpost_dt,
+			fm.mbpost_text,
+			fm.mbpost_likes,
+			fm.mbpost_reblogs,
+			fm.mbpost_id_reblog,
+			fu.user_username,
+			fu.user_patron
+		FROM `fst_microblog_post` fm
+		LEFT JOIN `fst_user` fu
+			ON fm.user_id = fu.user_id
+		WHERE (fm.mbpost_id='" . $iPostID . "')
+		AND (fm.mbpost_hidden='0')";
+	$result_post = Query ($query_post);
+	if (mysqli_num_rows ($result_post) == 1)
+	{
+		$row_post = mysqli_fetch_assoc ($result_post);
+		/***/
+		$iBloggerID = intval ($row_post['user_id']);
+		$sDT = $row_post['mbpost_dt'];
+		$sDate = date ('j F Y (H:i)', strtotime ($sDT));
+		$sText = $row_post['mbpost_text'];
+		$iLikes = intval ($row_post['mbpost_likes']);
+		$iReblogs = intval ($row_post['mbpost_reblogs']);
+		$iReblogID = intval ($row_post['mbpost_id_reblog']);
+		$sUsername = $row_post['user_username'];
+		$iPatron = intval ($row_post['user_patron']);
+		/***/
+		if ($bReblog === TRUE)
+			{ $sClass = 'reblog'; } else { $sClass = 'mbpost'; }
+		/***/
+		$bReblogged = HasReblogged ($iVisitorID, $iPostID);
+		/***/
+		$query_liked = "SELECT
+				likembpost_id
+			FROM `fst_likembpost`
+			WHERE (mbpost_id='" . $iPostID . "')
+			AND (user_id='" . $iVisitorID . "')";
+		$result_liked = Query ($query_liked);
+		if (mysqli_num_rows ($result_liked) == 1)
+			{ $bLiked = TRUE; } else { $bLiked = FALSE; }
+		/***/
+		if ($iBloggerID == $iVisitorID)
+			{ $bAuthor = TRUE; } else { $bAuthor = FALSE; }
+		/***/
+		if ($iPatron == 1)
+			{ $sPatron = PatronStar(); } else { $sPatron = ''; }
+		/***/
+		$sStatusURL = '/status/' . $sUsername . '/' . $iPostID;
+
+$sHTML = '
+<div id="post-' . $iPostID . '" class="' . $sClass . '">
+<span style="display:block; float:left; width:60px;">
+' . GetUserAvatar ($sUsername, 'small', 1) . '
+</span>
+<div style="float:left; width:calc(100% - 60px);">
+<a href="/user/' . $sUsername . '">' . $sUsername . '</a>' . $sPatron . ' · <a href="' . $sStatusURL . '" style="font-size:12px; color:#666; font-weight:normal;">' . $sDate . '</a>
+<br>
+';
+
+		if (($iReblogID == 0) || (($iReblogID != 0) && (strlen ($sText) != 0)))
+		{
+$sHTML .= '
+<span style="display:block; word-break:break-word; padding:5px 0;">
+' . nl2br (HashTags (Sanitize ($sText))) . '
+</span>
+';
+		}
+
+		if (($iReblogID != 0) && ($bReblog === FALSE))
+		{
+			if (strlen ($sText) == 0)
+			{
+				$sMBPost = GetMBPost ($iReblogID, $iVisitorID, TRUE, 2);
+				if ($sMBPost !== FALSE)
+				{
+					$sHTML .= $sMBPost;
+				} else {
+$sHTML .= '
+<div class="reblog" style="font-style:italic;">
+This microblog post has been deleted.
+</div>
+';
+				}
+				$iActions = 1;
+			} else {
+				$sMBPost = GetMBPost ($iReblogID, $iVisitorID, TRUE, 1);
+				if ($sMBPost !== FALSE)
+				{
+					$sHTML .= $sMBPost;
+				} else {
+$sHTML .= '
+<div class="reblog" style="font-style:italic;">
+This microblog post has been deleted.
+</div>
+';
+				}
+			}
+		}
+
+		switch ($iActions)
+		{
+			case 1:
+				if ($bAuthor === TRUE)
+					{ $sHTML .= GetMBPostHidden ($iPostID, FALSE); }
+				break;
+			case 2:
+				if ($bAuthor === TRUE)
+					{ $sHTML .= GetMBPostHidden ($iPostID, TRUE); }
+				$sHTML .= GetMBPostReported ($iPostID, $sUsername);
+				$sHTML .= GetMBPostReblogged ($iPostID, $sUsername,
+					$bReblogged, $iReblogs);
+				$sHTML .= GetMBPostLiked ($iPostID, $bAuthor, $bLiked, $iLikes);
+				break;
+		}
+
+$sHTML .= '
+</div>
+<span style="display:block; clear:both;"></span>
+</div>
+';
+
+		return ($sHTML);
+	} else {
+		return (FALSE);
+	}
+}
+/*****************************************************************************/
+function GetReblogID ($iPostID)
+/*****************************************************************************/
+{
+	/* Returns an ID (which may be 0) or FALSE for unknown posts.
+	 * Ignores the mbpost_hidden status.
+	 */
+
+	$query_id = "SELECT
+			mbpost_id_reblog
+		FROM `fst_microblog_post`
+		WHERE (mbpost_id='" . $iPostID . "')";
+	$result_id = Query ($query_id);
+	if (mysqli_num_rows ($result_id) == 0)
+	{
+		$iID = FALSE;
+	} else {
+		$row_id = mysqli_fetch_assoc ($result_id);
+		$iID = intval ($row_id['mbpost_id_reblog']);
+	}
+
+	return ($iID);
+}
+/*****************************************************************************/
+function PostJavaScript ()
+/*****************************************************************************/
+{
+	/* Functions MicroBlogPosts(), HidePost() and LikePost() reside in
+	 * js/fst.js.
+	 */
+
+$sHTML = '
+<script>
+$("body").on("click", "[name=\"hidden\"]", function(event) {
+	event.stopImmediatePropagation(); /*** TODO ***/
+	if (confirm ("Remove post?")){
+		var this_id = $(this).closest("span").attr("id");
+		post_id = this_id.replace("hidden-","");
+		var csrf_token = "' . $_SESSION['fst']['csrf_token'] . '";
+		HidePost (post_id, csrf_token);
+	}
+});
+
+$("body").on("click", "[name=\"liked\"]", function(event){
+	event.stopImmediatePropagation(); /*** TODO ***/
+	var this_id = $(this).closest("span").attr("id");
+	post_id = this_id.replace("liked-","");
+	var csrf_token = "' . $_SESSION['fst']['csrf_token'] . '";
+	LikePost (post_id, csrf_token);
+});
+</script>
+';
+
+	return ($sHTML);
+}
+/*****************************************************************************/
+function PatronStar ()
+/*****************************************************************************/
+{
+$sHTML = '
+<a href="/patronage/" style="text-decoration:none;">
+<img src="/images/patronage.png" title="patron" alt="patronage" style="vertical-align:text-bottom;">
+</a>
+';
+
+	return ($sHTML);
+}
+/*****************************************************************************/
+function PatronBlock ($iYear)
+/*****************************************************************************/
+{
+$sHTML = '
+<div class="patronage-div">
+<a href="/patronage/" style="text-decoration:none;">
+<span class="patronage-span">
+<img src="/images/patronage.png" alt="patronage" style="margin-right:5px;">
+' . $iYear . ' patron
+</span>
+</a>
+</div>
+';
+
+	return ($sHTML);
+}
+/*****************************************************************************/
+function MicroBlogIcons ($iActive)
+/*****************************************************************************/
+{
+	$sHTML = '';
+
+	if (isset ($_SESSION['fst']['user_id']))
+	{
+		$sUsername = $_SESSION['fst']['user_username'];
+
+		$sHTML .= '<div id="mbicons">';
+
+		/*** 1 ***/
+$sHTML .= '
+<a href="/timeline/" style="text-decoration:none; margin-right:5px;">
+<img src="/images/icon32_timeline.png" title="timeline" alt="timeline">
+</a>
+';
+
+		/*** 2 ***/
+$sHTML .= '
+<a href="/user/' . $sUsername . '#microblog" style="text-decoration:none; margin-right:5px;">
+<img src="/images/icon32_post.png" title="post" alt="post">
+</a>
+';
+
+		/*** 3 ***/
+$sHTML .= '
+<a href="/explore/" style="text-decoration:none;">
+<img src="/images/icon32_explore.png" title="explore" alt="explore">
+</a>
+';
+
+		$sHTML .= '</div>';
+	}
+
+	return ($sHTML);
+}
+/*****************************************************************************/
+function GetTrendingDates ($sCurDate, $sActDate)
+/*****************************************************************************/
+{
+	$sHTML = '';
+
+	$iCurYear = date ('Y', strtotime ($sCurDate));
+	$iActYear = date ('Y', strtotime ($sActDate));
+
+	$query_dates = "SELECT
+			DISTINCT(trending_date)
+		FROM `fst_trending`
+		WHERE (YEAR(trending_date) = '" . $iActYear . "')
+		ORDER BY trending_date DESC";
+	$result_dates = Query ($query_dates);
+	while ($row_dates = mysqli_fetch_assoc ($result_dates))
+	{
+		$sDateOption = $row_dates['trending_date'];
+
+		$sHTML .= '<option value="' . $sDateOption . '"';
+		if ($sDateOption == $sActDate)
+			{ $sHTML .= ' selected'; }
+		$sHTML .= '>';
+		if ($sDateOption == $sCurDate)
+			{ $sHTML .= 'today'; } else { $sHTML .= $sDateOption; }
+		$sHTML .= '</option>' . "\n";
+	}
+
+	return ($sHTML);
 }
 /*****************************************************************************/
 

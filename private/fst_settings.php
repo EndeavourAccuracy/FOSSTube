@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -42,7 +42,12 @@ if ($GLOBALS['live'] === FALSE)
  */
 $GLOBALS['public_html'] = 'public_html';
 $GLOBALS['private'] = 'private';
-$GLOBALS['home'] = '/home/'; /*** WITH slashes. ***/
+
+/* The primary location for jpg/ and mp4/ is always $GLOBALS['public_html'].
+ * Optionally, add ADDITIONAL paths in this array.
+ */
+$GLOBALS['additional_storage_paths'] = array();
+$GLOBALS['warning_path_free_under'] = '50G';
 
 $GLOBALS['name'] = 'Website name';
 $GLOBALS['name_seo_alternative'] = 'Alternative name';
@@ -117,5 +122,20 @@ $GLOBALS['may_add_topics'] = array();
 
 $GLOBALS['request_types'] = array (
 	1 => 'email address'
+);
+
+/*** Codes of content to feature. ***/
+$GLOBALS['featured'] = array();
+
+/*** For the images, see: $GLOBALS['public_html']/hashflags/ ***/
+$GLOBALS['hashflags'] = array (
+	'example' => 'ExAmPlE'
+);
+
+/* 'username', 'year'
+ * Also, user_patron in table `fst_user`.
+ */
+$GLOBALS['patronage'] = array (
+	array ('', '')
 );
 ?>

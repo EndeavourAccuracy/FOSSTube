@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -124,7 +124,7 @@ if ((isset ($_POST['csrf_token'])) &&
 							$result_add = Query ($query_add);
 							if (mysqli_affected_rows ($GLOBALS['link']) == 1)
 							{
-								UpdateCountComments ($iVideoID);
+								UpdateCountCommentsVideo ($iVideoID);
 
 								$arResult['result'] = 1;
 								$arResult['error'] = '';

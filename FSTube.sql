@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -39,12 +39,14 @@ CREATE TABLE `fst_user` (
 	`user_information` text NOT NULL,
 	`user_warnings_video` int(11) NOT NULL DEFAULT '0',
 	`user_warnings_comment` int(11) NOT NULL DEFAULT '0',
+	`user_warnings_mbpost` int NOT NULL DEFAULT '0',
 	`user_warnings_avatar` int(11) NOT NULL DEFAULT '0',
 	`user_deleted` tinyint(1) NOT NULL DEFAULT '0',
 	`user_deleted_reason` text NOT NULL,
 	`user_regip` VARCHAR(100) NOT NULL,
 	`user_regdt` DATETIME NOT NULL,
 	`user_lastlogindt` DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',
+	`user_patron` tinyint NOT NULL DEFAULT '0',
 	`user_pref_nsfw` tinyint(1) NOT NULL DEFAULT '0',
 	`user_pref_cwidth` int(11) NOT NULL DEFAULT 0,
 	`user_pref_tsize` int(11) NOT NULL DEFAULT 80,
@@ -174,6 +176,7 @@ CREATE TABLE `fst_issue` (
 	`issue_ind_text` tinyint(1) NOT NULL DEFAULT '0',
 	`issue_ind_text_forum` tinyint(1) NOT NULL DEFAULT '0',
 	`issue_ind_comment` tinyint(1) NOT NULL DEFAULT '0',
+	`issue_ind_mbpost` tinyint NOT NULL DEFAULT '0',
 	`issue_ind_user` tinyint(1) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`issue_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -195,6 +198,7 @@ CREATE TABLE `fst_report` (
 	`report_occursattime` varchar(10) NOT NULL DEFAULT '',
 	`video_id` int(11) NOT NULL,
 	`comment_id` int(11) NOT NULL,
+	`mbpost_id` int NOT NULL DEFAULT '0',
 	`user_id` int(11) NOT NULL,
 	`message` text NOT NULL,
 	`report_email` VARCHAR(200) NOT NULL,
@@ -436,4 +440,90 @@ CREATE TABLE `fst_commentslastviewed` (
 	`commentslastviewed_dt` datetime NOT NULL,
 	PRIMARY KEY (`commentslastviewed_id`),
 	UNIQUE KEY `video_and_user` (`video_id`, `user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `fst_tdone` (
+	`tdone_id` BIGINT NOT NULL AUTO_INCREMENT,
+	`tdone_date` DATE UNIQUE NOT NULL,
+	PRIMARY KEY (`tdone_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `fst_top10_views` (
+	`top10v_id` BIGINT NOT NULL AUTO_INCREMENT,
+	`top10v_date` DATE NOT NULL,
+	`top10v_rank` int(11) NOT NULL,
+	`video_id` int(11) NOT NULL,
+	`top10v_count` int(11) NOT NULL,
+	`top10v_title` varchar(100) NOT NULL,
+	PRIMARY KEY (`top10v_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `fst_top10_likes` (
+	`top10l_id` BIGINT NOT NULL AUTO_INCREMENT,
+	`top10l_date` DATE NOT NULL,
+	`top10l_rank` int(11) NOT NULL,
+	`video_id` int(11) NOT NULL,
+	`top10l_count` int(11) NOT NULL,
+	`top10l_title` varchar(100) NOT NULL,
+	PRIMARY KEY (`top10l_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `fst_top10_commenters` (
+	`top10c_id` BIGINT NOT NULL AUTO_INCREMENT,
+	`top10c_date` DATE NOT NULL,
+	`top10c_rank` int(11) NOT NULL,
+	`video_id` int(11) NOT NULL,
+	`top10c_count` int(11) NOT NULL,
+	`top10c_title` varchar(100) NOT NULL,
+	PRIMARY KEY (`top10c_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `fst_top10_referrers` (
+	`top10r_id` BIGINT NOT NULL AUTO_INCREMENT,
+	`top10r_date` DATE NOT NULL,
+	`top10r_rank` int(11) NOT NULL,
+	`video_id` int(11) NOT NULL,
+	`top10r_count` int(11) NOT NULL,
+	`top10r_title` varchar(100) NOT NULL,
+	PRIMARY KEY (`top10r_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `fst_trending` (
+	`trending_id` BIGINT NOT NULL AUTO_INCREMENT,
+	`trending_date` DATE NOT NULL,
+	`trending_rank` int(11) NOT NULL,
+	`video_id` int(11) NOT NULL,
+	`trending_total` int(11) NOT NULL,
+	`trending_title` varchar(100) NOT NULL,
+	PRIMARY KEY (`trending_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `fst_microblog_post` (
+	`mbpost_id` int NOT NULL AUTO_INCREMENT,
+	`user_id` int NOT NULL,
+	`mbpost_ip` VARCHAR(100) NOT NULL,
+	`mbpost_dt` datetime NOT NULL,
+	`mbpost_text` VARCHAR(280) NOT NULL,
+	`mbpost_likes` int NOT NULL DEFAULT '0',
+	`mbpost_reblogs` int NOT NULL DEFAULT '0',
+	`mbpost_id_reblog` int NOT NULL DEFAULT '0',
+	`mbpost_hidden` tinyint NOT NULL DEFAULT '0',
+	PRIMARY KEY (`mbpost_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `fst_follow` (
+	`follow_id` int NOT NULL AUTO_INCREMENT,
+	`user_id_microblog` int NOT NULL,
+	`user_id_follower` int NOT NULL,
+	`follow_adddate` DATETIME NOT NULL,
+	PRIMARY KEY (`follow_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `fst_likembpost` (
+	`likembpost_id` int NOT NULL AUTO_INCREMENT,
+	`mbpost_id` int NOT NULL,
+	`user_id` int NOT NULL,
+	`likembpost_adddate` datetime NOT NULL,
+	PRIMARY KEY (`likembpost_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `fst_updatecounts` (
+	`updatecounts_id` int NOT NULL AUTO_INCREMENT,
+	`user_id_deleted` int NOT NULL,
+	PRIMARY KEY (`updatecounts_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

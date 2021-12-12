@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -35,7 +35,7 @@ Optionally, to help improve the website, you may explain why you are leaving:
 <br>
 <textarea id="reason" style="width:600px; max-width:100%; height:70px;"></textarea>
 <br>
-Do you really want to delete your account "' . $sUsername . '", <span style="color:#f00;">including all its videos, texts and comments</span>?
+Do you really want to delete your account "' . $sUsername . '", <span style="color:#f00;">including all its videos, texts, comments and posts</span>?
 </span>
 <input id="confirm" type="checkbox"> I confirm.
 <div id="delete-error" style="color:#f00; margin-top:10px;"></div>

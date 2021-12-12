@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -53,12 +53,16 @@ function Q2 ()
 {
 print ('
 <h2 id="Q2" class="question" style="margin-top:30px;">
-What does subscribe do?
+What do subscribe and follow do?
 </h2>
 <span>
-Once you subscribe to a user, any new videos/texts they publish will show up on your <a href="/notifications/">Notifications</a> page.
+Once you subscribe to a user\'s content, any new videos/texts they publish will show up on your <a href="/notifications/">Notifications</a> page.
 <br>
 If one or more notifications exist, you will automatically see a green notice about this in the menu bar when logged in.
+<br>
+You will <span style="font-style:italic;">not</span> receive emails.
+<br>
+Once you follow a user\'s microblog, any new posts they publish will show up on your <a href="/timeline/">Timeline</a>.
 <br>
 You will <span style="font-style:italic;">not</span> receive emails.
 </span>

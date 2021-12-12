@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -39,7 +39,7 @@ if ((isset ($_POST['csrf_token'])) &&
 		$arOptions = array_unique ($arOptions);
 
 		$sOpen = PollOpen ($iPollID);
-		if (($sOpen !== FALSE) && ($sOpen != -1))
+		if (($sOpen !== FALSE) && ($sOpen !== -1))
 		{
 			if (isset ($_SESSION['fst']['user_id']))
 			{

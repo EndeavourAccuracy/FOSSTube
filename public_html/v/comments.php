@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -209,14 +209,17 @@ $sHTML .= '>
 
 	if ($iCommentHidden == '0')
 	{
+		$iPatron = intval ($row_comment['user_patron']);
+		if ($iPatron == 1)
+			{ $sPatron = PatronStar(); } else { $sPatron = ''; }
+
 $sHTML .= '
 <div>
 <span style="display:block; float:left; width:60px;">
 ' . GetUserAvatar ($sUser, 'small', 1) . '
 </span>
 <span style="display:block; float:left;">
-<a target="_blank" href="/user/' . $sUser . '">' . $sUser . '</a>
-';
+<a target="_blank" href="/user/' . $sUser . '">' . $sUser . '</a>' . $sPatron;
 
 		/*** (site owner) ***/
 		if ((IsText ($sCode) == 3) &&
@@ -323,7 +326,8 @@ function ShowComments ($iVideoID, $iCommentsShow, $bOwner, $bMuted,
 			fc.comment_pinned,
 			fc.comment_hidden,
 			fc.comment_approved,
-			fc.comment_adddate
+			fc.comment_adddate,
+			fu.user_patron
 		FROM `fst_comment` fc
 		LEFT JOIN `fst_user` fu
 			ON fc.user_id = fu.user_id

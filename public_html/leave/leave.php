@@ -1,6 +1,6 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.3 (September 2021)
+/* FSTube v1.4 (December 2021)
  * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
@@ -40,19 +40,22 @@ if ((isset ($_POST['csrf_token'])) &&
 					$iUserID = intval ($_SESSION['fst']['user_id']);
 					$sDTNow = date ('Y-m-d H:i:s');
 
+					/*** Microblog posts. ***/
+					$query_del = "UPDATE `fst_microblog_post` SET
+							mbpost_hidden='1'
+						WHERE (user_id='" . $iUserID . "')";
+					Query ($query_del);
+
 					/*** Comments. ***/
 					$query_del = "UPDATE `fst_comment` SET
 							comment_hidden='1'
 						WHERE (user_id='" . $iUserID . "')";
 					Query ($query_del);
-					/***/
-					$query_update = "SELECT
-							DISTINCT(video_id)
-						FROM `fst_comment`
-						WHERE (user_id='" . $iUserID . "')";
-					$result_update = Query ($query_update);
-					while ($row_update = mysqli_fetch_assoc ($result_update))
-						{ UpdateCountComments ($row_update['video_id']); }
+
+					/*** Update counts via cron. ***/
+					$query_add = "INSERT INTO `fst_updatecounts` SET
+						user_id_deleted='" . $iUserID . "'";
+					Query ($query_add);
 
 					/*** Videos. ***/
 					$query_del = "UPDATE `fst_video` SET
