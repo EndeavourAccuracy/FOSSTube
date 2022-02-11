@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.4 (December 2021)
- * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.5 (February 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,11 +25,7 @@ include_once (dirname (__FILE__) . '/../fst_base.php');
 HTMLStart ('Maintenance', '', '', 0, FALSE);
 print ('<h1>Maintenance</h1>');
 
-print ('
-The website is in maintenance mode.
-<br>
-Currently, users can not login.
-');
+IfMaintenanceShow();
 
 HTMLEnd();
 ?>

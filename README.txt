@@ -7,13 +7,13 @@
 
 ===[1 - ABOUT]=================================================================
 
-FSTube v1.4 (December 2021)
-Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
+FOSSTube v1.5 (February 2022)
+Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
 
 A free and open-source video sharing content management system.
 
-The FSTube website can be found at [ https://www.fstube.org/ ].
-Its GitHub repository at [ https://github.com/FSTube/FSTube ].
+The FOSSTube website can be found at [ https://www.fosstube.org/ ].
+Its GitHub repository at [ https://github.com/EndeavourAccuracy/FOSSTube ].
 
 ===[2 - LICENSE/DISCLAIMER]====================================================
 
@@ -34,7 +34,7 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 
 --------------------
-The above (FSF and OSI approved) zlib license is only for FSTube itself.
+The above (FSF and OSI approved) zlib license is only for FOSSTube itself.
 Distro, website and platform icons are property of their respective owners.
 Bootstrap 3.3.7: MIT
 HTML5 Shiv 3.7.3: MIT/GPL2
@@ -111,18 +111,20 @@ PHP QR Code 1.1.4: LGPL3
 * Twitter-like microblogging on user pages, including likes, reblogs, following and timeline, hashtags and hashflags, status pages, and explore (search).
 * Featured content.
 * Trending page, based on daily top 10 logs.
+* Basic per-user statistics.
 
 ===[4 - INSTALLATION AND SET UP]===============================================
 
 --------------------
 Before you get started
 --------------------
-FSTube is fairly easy to install and set up, but it requires at least some knowledge of GNU/Linux. If you have no experience with GNU/Linux, I urge you to ask a system administrator to get FSTube up and running for you.
+FOSSTube is fairly easy to install and set up, but it requires at least some knowledge of GNU/Linux. If you have no experience with GNU/Linux, I urge you to ask a system administrator to get FOSSTube up and running for you.
 
-FSTube is an asynchronous web application that heavily uses Ajax, which requires visitors to have JavaScript enabled. FSTube is NOT a decentralized, federated or peer-to-peer application. FSTube transcodes to MP4 H.264. Account creation requires a valid email address.
+FOSSTube is an asynchronous web application that heavily uses Ajax, which requires visitors to have JavaScript enabled. FOSSTube is NOT a decentralized, federated or peer-to-peer application. FOSSTube transcodes to MP4 H.264. Account creation requires a valid email address.
 
-An example website that uses FSTube:
+An example website that uses FOSSTube:
 https://www.freespeechtube.org/
+(FOSSTube is NOT associated with FreeSpeechTube.)
 
 --------------------
 Requirements
@@ -139,12 +141,12 @@ Requirements
 --------------------
 Settings and customization
 --------------------
-The assumption is that FSTube will be installed in the root of your domain. Running FSTube from a subdirectory is completely untested. You may attempt doing so, e.g. by including a <base> in HTMLStart(), but if you do, you are on your own.
+The assumption is that FOSSTube will be installed in the root of your domain. Running FOSSTube from a subdirectory is completely untested. You may attempt doing so, e.g. by including a <base> in HTMLStart(), but if you do, you are on your own.
 
 You must have a non-public directory (such as private/) on the same level as your website directory (such as public_html/ or www/). Virtually all accounts have this nowadays. If your account does not, (ask your webmaster to) create one.
 
 First, check if any addendums have been issued for this text:
-https://www.fstube.org/addendums/1.4/
+https://www.fosstube.org/addendums/1.5/
 
 Add
 character-set-server=utf8mb4
@@ -154,8 +156,8 @@ At the end of the [mysqld] section, add:
 character-set-server=utf8mb4
 $ sudo service mysql restart
 
-Edit FSTube.sql to change all instances of "YOURPASS", and optionally also change the name of forum board "FSTube".
-Then use FSTube.sql to create all MySQL tables.
+Edit FOSSTube.sql to change all instances of "YOURPASS", and optionally also change the name of forum board "FOSSTube".
+Then use FOSSTube.sql to create all MySQL tables.
 
 Enable various Apache and PHP extensions:
 $ sudo a2enmod rewrite
@@ -216,4 +218,4 @@ Upload all private/ and public_html/ files.
 
 Create an administrator account (you specified their usernames in fst_settings.php), and login. Then click "Admin" to make sure no red error messages show up.
 
-Questions? Contact info@fstube.org.
+Questions? Contact info@fosstube.org.

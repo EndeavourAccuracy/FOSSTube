@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.4 (December 2021)
- * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.5 (February 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -68,7 +68,7 @@ The old URL will auto-redirect visitors to the new URL.
 			'create a new account</a>.');
 	} else {
 print ('
-Allowed characters are letters (a-z, A-Z), numbers (0-9), minus (-) and underscore (_).
+Allowed characters are letters (a-z, A-Z), digits (0-9), minus (-) and underscore (_).
 <br>
 <label for="username" class="lbl">New username (4-15 chars):</label>
 <input type="text" id="username" value="' . $sUsername . '" autofocus>

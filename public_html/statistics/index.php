@@ -23,41 +23,54 @@
 include_once (dirname (__FILE__) . '/../fst_base.php');
 
 /*****************************************************************************/
-function ShowTimeline ()
+function Statistics ()
 /*****************************************************************************/
 {
-print ('
-<input type="hidden" id="mboffset" value="0">
-<div id="microblogposts-error" style="color:#f00; margin-top:10px;"></div>
-<div id="microblogposts"><img src="/images/loading.gif" alt="loading"></div>
-<div id="microblogposts-more" style="margin-top:10px; text-align:center; display:none;"><span class="more-span">load more</span></div>
+	$iUserID = intval ($_SESSION['fst']['user_id']);
+	$sUsername = $_SESSION['fst']['user_username'];
 
-<script>
-$(document).ready(function(){
-	$("#mboffset").val(0);
-	MicroBlogPosts (0, 0);
-});
+	print ('<h2>Introduction</h2>');
+	print ('<p>Statistics about user/publisher "' .
+		Sanitize ($sUsername) . '".</p>');
 
-$("#microblogposts-more").click(function(){
-	var mboffset = $("#mboffset").val();
-	mboffset = parseInt(mboffset) + 10;
-	$("#mboffset").val(mboffset);
-	MicroBlogPosts (0, mboffset);
-});
-</script>
-');
+	print ('<h2>Publisher data</h2>');
+	print ('<p>');
+
+	/*** subscribers ***/
+	$query_sub = "SELECT
+			COUNT(user_id_subscriber) AS subscribers
+		FROM `fst_subscribe`
+		WHERE (user_id_channel='" . $iUserID . "')";
+	$result_sub = Query ($query_sub);
+	$row_sub = mysqli_fetch_assoc ($result_sub);
+	$iSubscribers = intval ($row_sub['subscribers']);
+	print ('Content subscribers: ' . $iSubscribers);
+
+	print ('<br>');
+
+	/*** followers ***/
+	$query_fol = "SELECT
+			COUNT(user_id_follower) AS followers
+		FROM `fst_follow`
+		WHERE (user_id_microblog='" . $iUserID . "')";
+	$result_fol = Query ($query_fol);
+	$row_fol = mysqli_fetch_assoc ($result_fol);
+	$iFollowers = intval ($row_fol['followers']);
+	print ('Microblog followers: ' . $iFollowers);
+
+	print ('</p>');
 }
 /*****************************************************************************/
 
-HTMLStart ('Timeline', 'Account', 'Timeline', 0, FALSE);
-print ('<h1>Timeline</h1>');
+HTMLStart ('Statistics', 'Account', 'Statistics', 0, FALSE);
+print ('<h1>Statistics</h1>');
 if (!isset ($_SESSION['fst']['user_id']))
 {
 	print ('You are not logged in.' . '<br>');
-	print ('To browse your timeline, first <a href="/signin/">sign in</a>.');
+	print ('To see statistics, first <a href="/signin/">sign in</a>.');
 } else {
-	print (MicroBlogIcons (1));
-	ShowTimeline();
+	LinkBack ('/account/', 'Account');
+	Statistics();
 }
 HTMLEnd();
 ?>

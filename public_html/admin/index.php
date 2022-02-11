@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.4 (December 2021)
- * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.5 (February 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -214,6 +214,7 @@ function BanExitNodes ()
 			HTMLStart ('Admin', 'Admin', 'Admin', 0, FALSE);
 			print ('<h1>Admin</h1>');
 			print ('Banned ' . $iAdded . ' (more) IPs.<br>Invalid: ' . $sInvalid);
+			print ('<br>Processed: ' . $sURL);
 		}
 	}
 }
@@ -306,7 +307,7 @@ function StatsSettings ()
 	$iViews = $row_bytes['views'];
 	$sVideosSize = '<span style="display:block;">Active videos: ' .
 		number_format ($iAmount) .
-		' (' . $iH . ' hrs, ' . $iM . ' min, ' . $iS . ' sec; ' .
+		' (' . number_format ($iH) . ' hrs, ' . $iM . ' min, ' . $iS . ' sec; ' .
 		number_format ($iViews) . ' views; ' . GetSizeHuman ($iBytes) .
 		' used)</span>';
 	print ($sVideosSize);
@@ -401,7 +402,19 @@ function StatsSettings ()
 function MySQLPHP ()
 /*****************************************************************************/
 {
+	/*** Do NOT add `` after FROM. ***/
+	$query_dbsize = "SELECT
+			SUM(data_length+index_length) AS bytes
+		FROM information_schema.tables
+		WHERE table_schema='" . $GLOBALS['db_dtbs'] . "'
+		GROUP BY table_schema";
+	$result_dbsize = Query ($query_dbsize);
+	$row_dbsize = mysqli_fetch_assoc ($result_dbsize);
+	$iBytes = intval ($row_dbsize['bytes']);
+
 	print ('<div class="admin-div">');
+	print ('Size database "' . $GLOBALS['db_dtbs'] . '": ' .
+		GetSizeHuman ($iBytes) . '<br>');
 	print ('MySQL version: ' . mysqli_get_server_info
 		($GLOBALS['link']) . '<br>');
 	print ('PHP version: ' . phpversion() . '<br>');
@@ -1007,6 +1020,7 @@ function LeaveReasons ()
 	print ('<div class="admin-div">');
 	print ('<span style="display:block; font-style:italic;">Leave reasons:</span>');
 	$query_reasons = "SELECT
+			user_email,
 			user_username,
 			user_deleted_reason
 		FROM `fst_user`
@@ -1020,10 +1034,12 @@ function LeaveReasons ()
 		$iRow = 0;
 		while ($row_reasons = mysqli_fetch_assoc ($result_reasons))
 		{
+			$sEmail = $row_reasons['user_email'];
 			$sUsername = $row_reasons['user_username'];
 			$sReason = $row_reasons['user_deleted_reason'];
 
-			print ($sUsername . ':<br>' . nl2br (Sanitize ($sReason)));
+			print ($sUsername . ' (' . $sEmail . '):<br>' .
+				nl2br (Sanitize ($sReason)));
 			$iRow++;
 			if ($iRow != $iRows) { print ('<hr class="fst-hr">'); }
 		}

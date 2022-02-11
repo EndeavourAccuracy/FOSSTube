@@ -1,3 +1,9 @@
+v1.5 (February 11, 2022) - Norbert de Jonge
+--------------------
++ Basic per-user statistics.
+* Software renamed from FSTube to FOSSTube, to fully disassociate from FreeSpeechTube.
+* Minor improvements.
+
 v1.4 (December 12, 2021) - Norbert de Jonge
 --------------------
 + Twitter-like microblogging on user pages, including likes, reblogs, following and timeline, hashtags and hashflags, status pages, and explore (search).

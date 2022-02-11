@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Zlib */
-/* FSTube v1.4 (December 2021)
- * Copyright (C) 2020-2021 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.5 (February 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -359,7 +359,7 @@ CREATE TABLE `fst_board` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 INSERT INTO `fst_board` VALUES (NULL, 'Entertainment', '', '10');
 INSERT INTO `fst_board` VALUES (NULL, 'Environment', '', '20');
-INSERT INTO `fst_board` VALUES (NULL, 'FSTube', '', '30');
+INSERT INTO `fst_board` VALUES (NULL, 'FOSSTube', '', '30');
 INSERT INTO `fst_board` VALUES (NULL, 'General', '', '40');
 INSERT INTO `fst_board` VALUES (NULL, 'History', '', '50');
 INSERT INTO `fst_board` VALUES (NULL, 'Law and order', '', '60');

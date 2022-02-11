@@ -1,4 +1,4 @@
-Only use this if you are upgrading an existing FSTube installation.
+Only use this if you are upgrading an existing FOSSTube installation.
 
 If you are, remember that ALL files may be different, including:
 - private/fst_settings.php
