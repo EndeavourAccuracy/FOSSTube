@@ -7,13 +7,12 @@
 
 ===[1 - ABOUT]=================================================================
 
-FOSSTube v1.5 (February 2022)
-Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+FOSSTube v1.6 (December 2022)
+Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
 
 A free and open-source video sharing content management system.
 
-The FOSSTube website can be found at [ https://www.fosstube.org/ ].
-Its GitHub repository at [ https://github.com/EndeavourAccuracy/FOSSTube ].
+The FOSSTube website can be found at [ https://github.com/EndeavourAccuracy/FOSSTube ].
 
 ===[2 - LICENSE/DISCLAIMER]====================================================
 
@@ -112,6 +111,8 @@ PHP QR Code 1.1.4: LGPL3
 * Featured content.
 * Trending page, based on daily top 10 logs.
 * Basic per-user statistics.
+* Optional hat-note.
+* Optional DMCA page.
 
 ===[4 - INSTALLATION AND SET UP]===============================================
 
@@ -138,6 +139,8 @@ Requirements
 * A domain name.
 * A proper server. This is subjective, but I suggest using 4+ CPUs, 8G+ RAM, 100G+ SSD, and being allowed to have 2TB+ monthly traffic.
 
+Unless you feel comfortable using it, do NOT use DirectAdmin.
+
 --------------------
 Settings and customization
 --------------------
@@ -146,7 +149,7 @@ The assumption is that FOSSTube will be installed in the root of your domain. Ru
 You must have a non-public directory (such as private/) on the same level as your website directory (such as public_html/ or www/). Virtually all accounts have this nowadays. If your account does not, (ask your webmaster to) create one.
 
 First, check if any addendums have been issued for this text:
-https://www.fosstube.org/addendums/1.5/
+https://github.com/EndeavourAccuracy/FOSSTube/issues
 
 Add
 character-set-server=utf8mb4
@@ -157,7 +160,8 @@ character-set-server=utf8mb4
 $ sudo service mysql restart
 
 Edit FOSSTube.sql to change all instances of "YOURPASS", and optionally also change the name of forum board "FOSSTube".
-Then use FOSSTube.sql to create all MySQL tables.
+Then use FOSSTube.sql to create all MySQL tables:
+$ sudo mysql < FOSSTube.sql
 
 Enable various Apache and PHP extensions:
 $ sudo a2enmod rewrite
@@ -182,6 +186,7 @@ zlib.output_compression = Off
 $ sudo service apache2 restart
 
 Modify all "CHANGE" in private/fst_db.php.
+(Matching your CREATE USER line of FOSSTube.sql.)
 
 Modify all settings in private/fst_settings.php.
 If, for security purposes, you renamed the directories "swift_random" and "phpqrcode_random", also change it in the above file.
@@ -200,6 +205,8 @@ Modify HTML text:
 * public_html/mod/guidelines.html
 * public_html/404.html
 * public_html/patronage/patronage.html
+If you comment out the DMCA policy in fst_base.php, then also modify:
+* public_html/DMCA/DMCA.html
 
 Modify images:
 * All images in the directory public_html/images/favicons/
@@ -218,4 +225,10 @@ Upload all private/ and public_html/ files.
 
 Create an administrator account (you specified their usernames in fst_settings.php), and login. Then click "Admin" to make sure no red error messages show up.
 
-Questions? Contact info@fosstube.org.
+If uploading fails, try editing public_html/upload/upload.php and change
+$GLOBALS['ffprobe'] = substr (shell_exec ('which ffprobe'), 0, -1);
+to
+$GLOBALS['ffprobe'] = '/bin/ffprobe';
+(Or wherever ffprobe resides.)
+
+Questions? Contact nlmdejonge@gmail.com.

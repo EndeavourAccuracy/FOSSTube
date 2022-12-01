@@ -1,3 +1,9 @@
+v1.6 (December 1, 2022) - Norbert de Jonge
+--------------------
++ Optional hat-note.
++ Optional DMCA page.
+* Minor improvements and fixes.
+
 v1.5 (February 11, 2022) - Norbert de Jonge
 --------------------
 + Basic per-user statistics.

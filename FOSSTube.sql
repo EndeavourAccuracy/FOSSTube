@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -180,17 +180,17 @@ CREATE TABLE `fst_issue` (
 	`issue_ind_user` tinyint(1) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`issue_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-INSERT INTO `fst_issue` VALUES (NULL, 'Heavy spammer or scammer', 'spammer', 0, 0, 0, 0, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Impersonation', 'impersonation', 0, 0, 0, 0, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Graphic violence', 'violence', 1, 0, 0, 0, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Sexually explicit content', 'explicit', 1, 1, 1, 1, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Promotes terrorism', 'terrorism', 1, 1, 1, 1, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Infringes my rights', 'rights', 1, 1, 1, 0, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Hate speech against a protected group', 'hate', 1, 1, 1, 1, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Severe threat/intimidation', 'threat', 1, 1, 1, 1, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Unlawful (e.g. libel)', 'unlawful', 1, 1, 1, 1, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Sexy/sexualized minor', 'minor', 1, 0, 0, 0, 1);
-INSERT INTO `fst_issue` VALUES (NULL, 'Problematic thumbnail', 'thumbnail', 1, 1, 0, 0, 0);
+INSERT INTO `fst_issue` VALUES (NULL, 'Heavy spammer or scammer', 'spammer', 0, 0, 0, 0, 0, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Impersonation', 'impersonation', 0, 0, 0, 0, 0, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Graphic violence', 'violence', 1, 0, 0, 0, 0, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Sexually explicit content', 'explicit', 1, 1, 1, 1, 1, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Promotes terrorism', 'terrorism', 1, 1, 1, 1, 1, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Infringes my rights', 'rights', 1, 1, 1, 0, 0, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Hate speech against a protected group', 'hate', 1, 1, 1, 1, 1, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Severe threat/intimidation', 'threat', 1, 1, 1, 1, 1, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Unlawful (e.g. libel)', 'unlawful', 1, 1, 1, 1, 1, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Sexy/sexualized minor', 'minor', 1, 0, 0, 0, 0, 1);
+INSERT INTO `fst_issue` VALUES (NULL, 'Problematic thumbnail', 'thumbnail', 1, 1, 0, 0, 0, 0);
 CREATE TABLE `fst_report` (
 	`report_id` int(11) NOT NULL AUTO_INCREMENT,
 	`report_type` tinyint(1) NOT NULL,
@@ -526,4 +526,11 @@ CREATE TABLE `fst_updatecounts` (
 	`updatecounts_id` int NOT NULL AUTO_INCREMENT,
 	`user_id_deleted` int NOT NULL,
 	PRIMARY KEY (`updatecounts_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `fst_setting` (
+	`setting_id` BIGINT NOT NULL AUTO_INCREMENT,
+	`setting_key` VARCHAR(100) UNIQUE NOT NULL,
+	`setting_value` text NOT NULL,
+	PRIMARY KEY (`setting_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,24 @@
 
 include_once (dirname (__FILE__) . '/../fst_base.php');
 
+/*****************************************************************************/
+function CheckFunctions ()
+/*****************************************************************************/
+{
+	$arMissing = array();
+	if (function_exists ('shell_exec') === FALSE)
+		{ array_push ($arMissing, 'shell_exec'); }
+	if (function_exists ('exec') === FALSE)
+		{ array_push ($arMissing, 'exec'); }
+	if (!empty ($arMissing))
+	{
+		print ('<div class="admin-div" style="text-align:center;' .
+			' color:#f00; font-weight:bold;">');
+		print ('You MUST enable function(s):<br>');
+		foreach ($arMissing as $sMissing) { print ($sMissing . '()<br>'); }
+		print ('</div>');
+	}
+}
 /*****************************************************************************/
 function OwnerCheck ()
 /*****************************************************************************/
@@ -149,6 +167,7 @@ function UserSwitch ()
 		$_SESSION['fst']['user_pref_tsize'] = $arUser['pref_tsize'];
 		/***/
 		header ('Location: /');
+		exit();
 	}
 }
 /*****************************************************************************/
@@ -225,9 +244,9 @@ function IPv6 ()
 	print ('<div class="admin-div">');
 	if (defined ('AF_INET6'))
 	{
-		print ('IPv6 is <span style="color:#008000;">enabled</span>');
+		print ('IPv6 is <span style="color:#008000;">enabled</span> in PHP.');
 	} else {
-		print ('IPv6 is <span style="color:#f00;">disabled</span>');
+		print ('IPv6 is <span style="color:#f00;">disabled</span> in PHP.');
 	}
 	print ('</div>');
 }
@@ -302,7 +321,7 @@ function StatsSettings ()
 	$iBytes = $row_bytes['bytes'];
 	$iSeconds = $row_bytes['seconds'];
 	$iH = floor ($iSeconds / 3600);
-	$iM = floor (($iSeconds / 60) % 60);
+	$iM = floor (fmod ($iSeconds / 60, 60));
 	$iS = $iSeconds % 60;
 	$iViews = $row_bytes['views'];
 	$sVideosSize = '<span style="display:block;">Active videos: ' .
@@ -1502,6 +1521,26 @@ function DiskUsage ()
 	print ('</div>');
 }
 /*****************************************************************************/
+function HomeNote ()
+/*****************************************************************************/
+{
+	$sNote = SettingLoad ('note_home');
+	if ($sNote === FALSE) { $sNote = ''; }
+
+	print ('<div class="admin-div">');
+print ('
+<span style="display:block; margin-bottom:10px;">This optional note will be publicly visible at the top of <a href="/">Home</a>:</span>
+<form id="save_note" action="/admin/" method="POST">
+<textarea name="note" style="width:600px; max-width:100%; height:150px;">' . Sanitize ($sNote) . '</textarea>
+<span style="display:block; font-style:italic; font-size:12px;">
+Can be left blank. You may include HTML code, e.g. &lt;br&gt; for line breaks.
+</span>
+<input type="submit" name="action" value="Save note" style="display:block;">
+</form>
+');
+	print ('</div>');
+}
+/*****************************************************************************/
 
 if (!IsAdmin())
 {
@@ -1626,10 +1665,21 @@ if (!IsAdmin())
 			case 'Disallow Tor login':
 				BanExitNodes();
 				break;
+			case 'Save note':
+				if (isset ($_POST['note']))
+					{ $sNote = $_POST['note']; }
+						else { $sNote = ''; }
+				HTMLStart ('Admin', 'Admin', 'Admin', 0, FALSE);
+				print ('<h1>Save note</h1>');
+				/*** Do NOT Sanitize the value, to allow HTML. ***/
+				SettingSave ('note_home', $sNote);
+				print ('Saved.');
+				break;
 		}
 	} else {
 		HTMLStart ('Admin', 'Admin', 'Admin', 0, FALSE);
 		print ('<h1>Admin</h1>');
+		CheckFunctions();
 		OwnerCheck();
 		StatsSettings();
 		UserPick();
@@ -1667,6 +1717,7 @@ if (!IsAdmin())
 		Requests();
 		EmailDomains();
 		DiskUsage();
+		HomeNote();
 	}
 }
 HTMLEnd();

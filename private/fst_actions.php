@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -116,7 +116,7 @@ function EmailSomethingInQueue ()
 	/*** $arTo, $arBcc ***/
 	$arTo = array();
 	$arBcc = array();
-	$sMods = '\'' . implode ('\',\'', $GLOBALS['mods']) . '\'';
+	$sMods = '\'' . implode ('\',\'', array_merge ($GLOBALS['admins'], $GLOBALS['mods'])) . '\'';
 	$query_email = "SELECT
 			user_email
 		FROM `fst_user`
@@ -143,7 +143,7 @@ function EmailNothingInQueue ()
 	/*** $arTo, $arBcc ***/
 	$arTo = array();
 	$arBcc = array();
-	$sMods = '\'' . implode ('\',\'', $GLOBALS['mods']) . '\'';
+	$sMods = '\'' . implode ('\',\'', array_merge ($GLOBALS['admins'], $GLOBALS['mods'])) . '\'';
 	$query_email = "SELECT
 			user_email
 		FROM `fst_user`

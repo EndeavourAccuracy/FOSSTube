@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -169,6 +169,41 @@ function UpdateCountReblogsMBPost ($iPostID)
 			mbpost_reblogs='" . $iCount . "'
 		WHERE (mbpost_id='" . $iPostID . "')";
 	Query ($query_update);
+}
+/*****************************************************************************/
+function SettingSave ($sKey, $sValue)
+/*****************************************************************************/
+{
+	/* This function does NOT - and should NOT - Sanitize() $sValue.
+	 * Whatever calls this function may sanitize the value.
+	 */
+
+	$query_save = "INSERT INTO `fst_setting` SET
+			setting_key='" . $sKey . "',
+			setting_value='" . $sValue . "'
+		ON DUPLICATE KEY UPDATE
+			setting_value='" . $sValue . "'";
+	Query ($query_save);
+}
+/*****************************************************************************/
+function SettingLoad ($sKey)
+/*****************************************************************************/
+{
+	/*** Returns FALSE or a value. ***/
+
+	$query_load = "SELECT
+			setting_value
+		FROM `fst_setting`
+		WHERE (setting_key='" . $sKey . "')";
+	$result_load = Query ($query_load);
+	if (mysqli_num_rows ($result_load) != 0)
+	{
+		$row_load = mysqli_fetch_assoc ($result_load);
+		$sValue = $row_load['setting_value'];
+		return ($sValue);
+	} else {
+		return (FALSE);
+	}
 }
 /*****************************************************************************/
 ?>

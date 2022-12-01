@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,8 @@ include_once (dirname (__FILE__) . '/../fst_base.php');
 
 HTMLStart ('Upload', 'Account', 'Upload', 0, FALSE);
 print ('<h1>Upload</h1>');
+if (function_exists ('shell_exec') === FALSE)
+	{ print ('No access to shell_exec().'); HTMLEnd(); exit(); }
 if (IsMod())
 	{ print ('Not as a mod.'); HTMLEnd(); exit(); }
 if (MayAdd ('videos') === FALSE)

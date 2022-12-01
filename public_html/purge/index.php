@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -97,7 +97,7 @@ print ('
 		{
 print ('
 <span style="display:block; margin-top:10px; color:#00f;">
-Tip: unless there is an urgent reason, wait at least 48 hours before purging entries marked with "(semi)".
+Tip: unless there is an urgent reason, wait at least 48 hours before purging entries marked with "(semi)". More info <a href="/faq/#Q3">here</a>.
 </span>
 ');
 		}

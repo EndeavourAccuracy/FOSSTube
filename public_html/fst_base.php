@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -132,6 +132,7 @@ if (isset ($_SESSION['fst']['user_id'])) { ShowLi ('/faq/', 'FAQ'); }
 print ('<li role="separator" class="divider"></li>');
 ShowLi ('/terms/', 'Terms of service');
 ShowLi ('/privacy/', 'Privacy policy');
+/*** ShowLi ('/DMCA/', 'DMCA policy'); ***/
 print ('<li role="separator" class="divider"></li>');
 ShowLi ('/contact.php', 'Contact');
 print ('</ul></li>' . "\n");

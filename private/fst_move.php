@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-/*** This script moves (and then symbolicly links) .mp4 files of video content that both a) is more than two weeks old, and b) has less than 200 views, to the directory $GLOBALS['big_storage_mp4']. The CPU load for this script is quite high. When running this script via ssh, make sure to ssh with '-o "ServerAliveInterval 60" -o "ServerAliveCountMax 120"' to keep the connection alive. ***/
+/*** This script moves (and then symbolically links) .mp4 files of video content that both a) is more than two weeks old, and b) has less than 200 views, to the directory $GLOBALS['big_storage_mp4']. The CPU load for this script is quite high. When running this script via ssh, make sure to ssh with '-o "ServerAliveInterval 60" -o "ServerAliveCountMax 120"' to keep the connection alive. ***/
 
 error_reporting (-1);
 ini_set ('display_errors', 'On');

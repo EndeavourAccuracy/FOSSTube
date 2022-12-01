@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -63,6 +63,12 @@ function Main ()
 /*****************************************************************************/
 {
 	IfMaintenanceShow();
+
+	$sNote = SettingLoad ('note_home');
+	if (($sNote !== FALSE) && ($sNote != ''))
+	{
+		print ('<span style="display:inline-block; background-color:#fff; color:#000; margin:10px 0; padding:10px; font-size:16px; border:1px solid #000;">' . $sNote . '</span>');
+	}
 
 	Search ('');
 

@@ -1,7 +1,7 @@
 <?php
 /* SPDX-License-Identifier: Zlib */
-/* FOSSTube v1.5 (February 2022)
- * Copyright (C) 2020-2022 Norbert de Jonge <mail@norbertdejonge.nl>
+/* FOSSTube v1.6 (December 2022)
+ * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -78,8 +78,9 @@ $sHTML = '
 		$xNrTopics = intval ($row_board['nr_topics']);
 		$xNrReplies = intval ($row_board['nr_replies']);
 		$xNrPosts = $xNrTopics + $xNrReplies;
-		if (strtotime ($row_board['lastreply_date']) >
-			strtotime ($row_board['lasttopic_date']))
+		if (($row_board['lastreply_date'] != NULL) &&
+			(strtotime ($row_board['lastreply_date']) >
+			strtotime ($row_board['lasttopic_date'])))
 		{
 			$sLastPostDate = ForumDate ($row_board['lastreply_date']);
 		} else {

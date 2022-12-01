@@ -1,4 +1,3 @@
-<?php
 /* SPDX-License-Identifier: Zlib */
 /* FOSSTube v1.6 (December 2022)
  * Copyright (C) 2020-2022 Norbert de Jonge <nlmdejonge@gmail.com>
@@ -20,31 +19,9 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
-include_once (dirname (__FILE__) . '/../fst_base.php');
-
-if ((isset ($_POST['csrf_token'])) &&
-	(TokenCorrect ($_POST['csrf_token'])))
-{
-	if (isset ($_POST['code']))
-	{
-		$sCode = FixString ($_POST['code']);
-
-		if (RandomCorrect ($sCode))
-		{
-			$arResult['result'] = 1;
-			$arResult['error'] = '';
-			$_SESSION['fst']['step_forgot'] = 3;
-		} else {
-			$arResult['result'] = 0;
-			$arResult['error'] = 'Invalid code.';
-		}
-	} else {
-		$arResult['result'] = 0;
-		$arResult['error'] = 'Code value is missing.';
-	}
-} else {
-	$arResult['result'] = 0;
-	$arResult['error'] = 'Incorrect token. Restart your browser, and retry.';
-}
-print (json_encode ($arResult));
-?>
+CREATE TABLE `fst_setting` (
+	`setting_id` BIGINT NOT NULL AUTO_INCREMENT,
+	`setting_key` VARCHAR(100) UNIQUE NOT NULL,
+	`setting_value` text NOT NULL,
+	PRIMARY KEY (`setting_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
